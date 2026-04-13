@@ -1,45 +1,180 @@
 {% extends 'admin/layout.html.twig' %}
 {% block title %}Produits{% endblock %}
+
 {% block body %}
-  <div class="hstack" style="justify-content:space-between; margin-bottom:12px;">
-    <div>
-      <h1>Produits</h1>
-      <div class="muted">Gestion catalogue + stock + activation.</div>
+<style>
+  .product-table {
+    min-width: 920px;
+  }
+
+  .product-row {
+    display: grid;
+    grid-template-columns: 64px minmax(240px, 1.6fr) 1fr 110px 110px 110px 150px;
+    gap: 14px;
+    align-items: center;
+  }
+
+  .product-thumb {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+      radial-gradient(circle at top, rgba(116, 198, 157, 0.2), transparent 54%),
+      linear-gradient(180deg, rgba(216, 243, 220, 0.74), #fff);
+    border: 1px solid var(--border);
+    color: var(--nutri-green);
+    font-weight: 800;
+    font-size: 0.76rem;
+  }
+
+  .product-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .product-name {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--nutri-dark);
+  }
+
+  .product-slug {
+    margin-top: 4px;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+  }
+
+  .metric-pill {
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--border);
+    font-weight: 700;
+    font-size: 0.82rem;
+  }
+
+  .search-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 10px;
+  }
+
+  .actions-cell {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .toolbar-stats {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 780px) {
+    .search-bar {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="page-intro">
+  <div>
+    <h1 class="page-title">Produits</h1>
+    <div class="page-subtitle">Gere le catalogue, le stock, la visibilite et les visuels produits.</div>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-primary" href="{{ path('admin_products_new') }}">Ajouter un produit</a>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:14px;">
+  <div class="card-head">
+    <div class="card-title">Recherche</div>
+    <div class="toolbar-stats">
+      <span class="metric-pill">{{ products|length }} produit{{ products|length > 1 ? 's' : '' }}</span>
+      <span class="metric-pill">{{ activeCount }} actif{{ activeCount > 1 ? 's' : '' }}</span>
     </div>
-    <a class="btn btn-primary" href="{{ path('admin_products_new') }}">Ajouter</a>
   </div>
 
-  <div class="card" style="margin-bottom:12px;">
-    <form method="get" class="hstack">
-      <input name="q" value="{{ q }}" placeholder="Rechercher (nom/slug)..." style="max-width:360px;">
-      <button class="btn">Rechercher</button>
-      <a class="btn" href="{{ path('admin_products_index') }}">Reset</a>
-    </form>
+  <form method="get" class="search-bar">
+    <input type="search" name="q" value="{{ q }}" placeholder="Rechercher par nom ou slug">
+    <button class="btn" type="submit">Rechercher</button>
+    <a class="btn" href="{{ path('admin_products_index') }}">Reset</a>
+  </form>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="card-title">Catalogue</div>
+    <div class="muted">Tri par date de creation, plus recent en premier.</div>
   </div>
 
-  <div class="card">
-    <table class="table">
-      <thead><tr><th>Nom</th><th>Catégorie</th><th>Prix</th><th>Stock</th><th>Actif</th><th></th></tr></thead>
-      <tbody>
-      {% for p in products %}
-        <tr>
-          <td><div style="font-weight:800;">{{ p.name }}</div><div class="muted">{{ p.slug }}</div></td>
-          <td>{{ p.category ? p.category.name : '—' }}</td>
-          <td>{{ p.price }} €</td>
-          <td><span class="badge {{ p.stock == 0 ? 'warn' : 'ok' }}">{{ p.stock }}</span></td>
-          <td><span class="badge {{ p.active ? 'ok' : 'bad' }}">{{ p.active ? 'Oui' : 'Non' }}</span></td>
-          <td class="hstack">
-            <a class="btn" href="{{ path('admin_products_edit', {id:p.id}) }}">Éditer</a>
-            <form method="post" action="{{ path('admin_products_delete', {id:p.id}) }}">
-              <input type="hidden" name="_token" value="{{ csrf_token('del_product_' ~ p.id) }}">
-              <button class="btn btn-danger" data-confirm="Supprimer ce produit ?">Supprimer</button>
-            </form>
-          </td>
+  <div class="table-wrap">
+    <table class="table product-table">
+      <thead>
+        <tr class="product-row">
+          <th>Visuel</th>
+          <th>Produit</th>
+          <th>Categorie</th>
+          <th>Prix</th>
+          <th>Stock</th>
+          <th>Etat</th>
+          <th></th>
         </tr>
-      {% else %}
-        <tr><td colspan="6" class="muted">Aucun produit.</td></tr>
-      {% endfor %}
+      </thead>
+      <tbody>
+        {% for p in products %}
+          <tr class="product-row">
+            <td>
+              <div class="product-thumb">
+                {% if p.photo %}
+                  {% set tablePhoto = p.photo|split('/')|last %}
+                  <img src="{{ asset('uploads/products/' ~ tablePhoto) }}" alt="{{ p.name }}">
+                {% else %}
+                  IMG
+                {% endif %}
+              </div>
+            </td>
+            <td>
+              <div class="product-name">{{ p.name }}</div>
+              <div class="product-slug">{{ p.slug }}</div>
+            </td>
+            <td>{{ p.category ? p.category.name : '-' }}</td>
+            <td>{{ p.price }} EUR</td>
+            <td>
+              <span class="badge {{ p.stock > 0 ? 'ok' : 'warn' }}">{{ p.stock }}</span>
+            </td>
+            <td>
+              <span class="badge {{ p.active ? 'ok' : 'bad' }}">{{ p.active ? 'Actif' : 'Masque' }}</span>
+            </td>
+            <td>
+              <div class="actions-cell">
+                <a class="btn" href="{{ path('admin_products_edit', { id: p.id }) }}">Editer</a>
+                <form method="post" action="{{ path('admin_products_delete', { id: p.id }) }}">
+                  <input type="hidden" name="_token" value="{{ csrf_token('del_product_' ~ p.id) }}">
+                  <button class="btn btn-danger" data-confirm="Supprimer ce produit ?">Supprimer</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="7" class="muted">Aucun produit trouve.</td>
+          </tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>
+</div>
 {% endblock %}

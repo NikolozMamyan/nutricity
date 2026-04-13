@@ -935,8 +935,9 @@
       <article class="product-card reveal" style="transition-delay: {{ loop.index0 % 4 * 0.07 }}s">
 
         <div class="product-img">
-          {% if product.image is defined and product.image %}
-            <img src="{{ asset('uploads/products/' ~ product.image) }}"
+          {% if product.photo %}
+            {% set productPhoto = product.photo|split('/')|last %}
+            <img src="{{ asset('uploads/products/' ~ productPhoto) }}"
                  alt="{{ product.name }}" loading="lazy">
           {% else %}
             <i class="fas fa-apple-alt product-placeholder" aria-hidden="true"></i>
@@ -1026,10 +1027,11 @@
       <article class="new-card reveal" style="transition-delay: {{ loop.index0 * 0.08 }}s">
 
         <div class="new-img">
-          {% if product.image is defined and product.image %}
-            <img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ product.name }}" loading="lazy">
+          {% if product.photo %}
+            {% set productPhoto = product.photo|split('/')|last %}
+            <img src="{{ asset('uploads/products/' ~ productPhoto) }}" alt="{{ product.name }}" loading="lazy">
           {% else %}
-            <i class="fas fa-leaf" aria-hidden="true"></i>
+            <i class="fas fa-apple-alt" aria-hidden="true"></i>
           {% endif %}
         </div>
 

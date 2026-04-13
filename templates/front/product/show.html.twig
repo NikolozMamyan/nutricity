@@ -111,7 +111,8 @@
     display: flex; flex-direction: column; align-items: center; gap: 10px;
     color: var(--pg-green); opacity: .18;
   }
-  .img-placeholder svg { width: 72px; height: 72px; }
+  .img-placeholder svg,
+  .img-placeholder i { width: 72px; height: 72px; font-size: 72px; }
   .img-placeholder span { font-size: .75rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
 
   .img-badge-new {
@@ -386,7 +387,8 @@
   }
   .rel-card-img img{ width:100%; height:100%; object-fit:cover; transition: transform .4s ease; }
   .rel-card:hover .rel-card-img img{ transform: scale(1.08); }
-  .rel-card-img svg{ width:40px; height:40px; color: var(--pg-green); opacity:.25; }
+  .rel-card-img svg,
+  .rel-card-img i{ width:40px; height:40px; color: var(--pg-green); opacity:.25; font-size:40px; }
   .rel-card-body{ padding: 1rem 1.1rem; flex: 1; display:flex; flex-direction:column; }
   .rel-card-cat{ font-size: .68rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color: var(--pg-green-l); margin-bottom:.25rem; }
   .rel-card-name{ font-size: .95rem; font-weight:700; color: var(--pg-dark); margin-bottom:.4rem; line-height: 1.3; }
@@ -498,14 +500,12 @@
       <div class="pshow-left">
         <div class="img-panel">
           <div class="img-frame">
-            {% if product.image is defined and product.image %}
-              <img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ product.name }}" loading="eager">
+            {% if product.photo %}
+              {% set productPhoto = product.photo|split('/')|last %}
+              <img src="{{ asset('uploads/products/' ~ productPhoto) }}" alt="{{ product.name }}" loading="eager">
             {% else %}
               <div class="img-placeholder">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-                  <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
-                  <path d="M16 10a4 4 0 01-8 0"/>
-                </svg>
+                <i class="fas fa-apple-alt" aria-hidden="true"></i>
                 <span>Image à venir</span>
               </div>
             {% endif %}
@@ -734,10 +734,11 @@
       {% for rel in related %}
         <a href="{{ path('product_show', {slug: rel.slug}) }}" class="rel-card reveal" style="transition-delay:{{ loop.index0 * 0.08 }}s;">
           <div class="rel-card-img">
-            {% if rel.image is defined and rel.image %}
-              <img src="{{ asset('uploads/products/' ~ rel.image) }}" alt="{{ rel.name }}" loading="lazy">
+            {% if rel.photo %}
+              {% set relatedPhoto = rel.photo|split('/')|last %}
+              <img src="{{ asset('uploads/products/' ~ relatedPhoto) }}" alt="{{ rel.name }}" loading="lazy">
             {% else %}
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+              <i class="fas fa-apple-alt" aria-hidden="true"></i>
             {% endif %}
           </div>
           <div class="rel-card-body">
