@@ -1,0 +1,523 @@
+{# templates/components/side_bar.html.twig #}
+
+<style>
+/* ============================================================
+   SIDEBAR
+============================================================ */
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--sidebar-w);
+  background: var(--green-900);
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  transition: transform var(--transition);
+  overflow: hidden;
+
+  background-image:
+    radial-gradient(ellipse at 0% 0%, rgba(116,198,157,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse at 100% 100%, rgba(27,67,50,0.9) 0%, transparent 70%);
+}
+
+/* ── Brand ── */
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 18px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.brand-icon {
+  width: 42px;
+  height: 42px;
+  background: linear-gradient(135deg, var(--green-300), var(--green-500));
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(116,198,157,0.3);
+}
+
+.brand-name {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.brand-sub {
+  display: block;
+  font-size: 0.58rem;
+  color: var(--green-300);
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ── Nav ── */
+.sidebar-nav {
+  flex: 1;
+  padding: 12px 10px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.08) transparent;
+}
+
+.nav-label {
+  font-size: 0.58rem;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.25);
+  font-weight: 600;
+  padding: 0 10px;
+  margin: 16px 0 6px;
+}
+
+.nav-label:first-child { margin-top: 4px; }
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  color: rgba(255,255,255,0.65);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background var(--transition), color var(--transition), transform var(--transition);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  position: relative;
+}
+
+.sidebar-link i {
+  font-size: 0.85rem;
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.sidebar-link:hover {
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  transform: translateX(3px);
+}
+
+.sidebar-link.is-active {
+  background: rgba(116,198,157,0.13);
+  color: var(--green-300);
+  font-weight: 600;
+}
+
+.sidebar-link.is-active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 55%;
+  background: var(--green-300);
+  border-radius: 0 3px 3px 0;
+}
+
+/* ── Panier sidebar ── */
+.sidebar-cart {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 13px;
+  border-radius: var(--radius-md);
+  background: rgba(221,161,94,0.1);
+  border: 1px solid rgba(221,161,94,0.18);
+  color: rgba(255,255,255,0.85);
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all var(--transition);
+  margin-bottom: 2px;
+  margin-top: 6px;
+  position: relative;
+  white-space: nowrap;
+}
+
+.sidebar-cart:hover {
+  background: rgba(221,161,94,0.18);
+  color: #fff;
+  transform: translateX(3px);
+  border-color: rgba(221,161,94,0.35);
+}
+
+.sidebar-cart.is-active {
+  background: rgba(221,161,94,0.18);
+  border-color: rgba(221,161,94,0.35);
+}
+
+.cart-icon-wrap {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  background: linear-gradient(135deg, var(--tan), var(--brown));
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 2px 10px rgba(221,161,94,0.4);
+}
+
+.cart-icon-wrap .cart-count {
+  position: absolute;
+  top: -5px; right: -5px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--green-900);
+}
+
+.cart-details { display: flex; flex-direction: column; line-height: 1.3; }
+.cart-label   { font-size: 0.875rem; font-weight: 600; color: rgba(255,255,255,0.9); }
+.cart-sub     { font-size: 0.62rem; color: var(--tan); font-weight: 500; }
+
+/* ── Sidebar footer ── */
+.sidebar-footer {
+  padding: 14px 18px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.social-row { display: flex; gap: 6px; margin-bottom: 10px; }
+
+.social-btn {
+  width: 30px; height: 30px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.45);
+  font-size: 0.72rem;
+  transition: all var(--transition);
+}
+
+.social-btn:hover {
+  background: var(--green-300);
+  color: #fff;
+  border-color: transparent;
+  transform: translateY(-2px);
+}
+
+.sidebar-copy { font-size: 0.65rem; color: rgba(255,255,255,0.2); }
+
+/* ── Close (mobile) ── */
+.sidebar-close {
+  display: none;
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 26px; height: 26px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-sm);
+  color: rgba(255,255,255,0.4);
+  font-size: 0.65rem;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+
+.sidebar-close:hover {
+  background: rgba(239,68,68,0.15);
+  color: #f87171;
+  border-color: rgba(239,68,68,0.2);
+}
+
+/* ── Overlay mobile ── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 190;
+  backdrop-filter: blur(3px);
+}
+
+.sidebar-overlay.is-active { display: block; }
+
+/* ============================================================
+   MOBILE HEADER (burger)
+============================================================ */
+.mobile-header {
+  display: none;
+  height: var(--header-h);
+  background: var(--green-900);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  align-items: center;
+  padding: 0 14px;
+  gap: 10px;
+  box-shadow: var(--shadow-md);
+  background-image: radial-gradient(ellipse at 0% 0%, rgba(116,198,157,0.07) 0%, transparent 60%);
+}
+
+.mobile-hamburger {
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+.mobile-hamburger:hover { background: rgba(255,255,255,0.14); transform: scale(1.05); }
+
+.mobile-brand { display: flex; align-items: center; gap: 9px; flex: 1; }
+
+.mobile-brand-icon {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--green-300), var(--green-500));
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.mobile-brand-name { font-size: 0.95rem; font-weight: 900; color: #fff; display: block; line-height: 1.1; }
+.mobile-brand-sub  { font-size: 0.55rem; color: var(--green-300); letter-spacing: 1.8px; text-transform: uppercase; font-weight: 500; }
+
+.mobile-right { display: flex; align-items: center; gap: 8px; }
+
+.mobile-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--green-300);
+  padding: 4px 9px;
+  background: rgba(116,198,157,0.1);
+  border-radius: 100px;
+  border: 1px solid rgba(116,198,157,0.2);
+}
+.mobile-status::before {
+  content: '';
+  width: 5px; height: 5px;
+  background: var(--green-300);
+  border-radius: 50%;
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.7); }
+}
+
+.mobile-cart-btn {
+  position: relative;
+  width: 38px; height: 38px;
+  background: linear-gradient(135deg, var(--tan), var(--brown));
+  border-radius: var(--radius-md);
+  color: #fff;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(221,161,94,0.4);
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+.mobile-cart-btn:hover { transform: scale(1.06); box-shadow: 0 4px 16px rgba(221,161,94,0.55); color: #fff; }
+
+.cart-badge {
+  position: absolute;
+  top: -6px; right: -6px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  width: 23px; height: 23px;
+  border-radius: 50%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+}
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); top: 0; }
+  .sidebar.is-open { transform: translateX(0); }
+  .sidebar-close { display: flex; }
+
+  .mobile-header { display: flex; }
+}
+</style>
+
+{# =========================
+   OVERLAY (mobile)
+========================= #}
+<div
+  class="sidebar-overlay"
+  data-layout-target="overlay"
+  data-action="click->layout#close"
+  aria-hidden="true">
+</div>
+
+{# =========================
+   MOBILE HEADER (burger)
+========================= #}
+<header class="mobile-header">
+  <button
+    type="button"
+    class="mobile-hamburger"
+    aria-label="Ouvrir le menu"
+    aria-controls="mainSidebar"
+    aria-expanded="false"
+    data-action="click->layout#toggle"
+    data-layout-target="toggleBtn"
+  >
+    <i class="fas fa-bars" data-layout-target="toggleIcon" aria-hidden="true"></i>
+  </button>
+
+  <a class="mobile-brand" href="{{ path('home') }}" aria-label="NUTRI CITY – Accueil">
+    <span class="mobile-brand-icon">
+      <i class="fas fa-seedling" aria-hidden="true"></i>
+    </span>
+    <span>
+      <span class="mobile-brand-name">NUTRI CITY</span>
+      <span class="mobile-brand-sub">Épicerie de l'Est</span>
+    </span>
+  </a>
+
+  <div class="mobile-right">
+    <span class="mobile-status">Ouvert</span>
+
+    {# Badge mobile #}
+    <a
+      href="{{ path('click_collect') }}"
+      class="mobile-cart-btn"
+      data-controller="cart-badge"
+      data-cart-badge-url-value="{{ path('cart_data')|default('/panier/donnees') }}"
+    >
+      <i class="fas fa-shopping-basket" aria-hidden="true"></i>
+      <span class="cart-badge" data-cart-badge-target="badge"></span>
+    </a>
+  </div>
+</header>
+
+{# =========================
+   SIDEBAR (targets layout)
+========================= #}
+<aside
+  id="mainSidebar"
+  class="sidebar"
+  aria-label="Navigation principale"
+  data-layout-target="sidebar"
+>
+  {# Close button (mobile) #}
+  <button
+    type="button"
+    class="sidebar-close"
+    aria-label="Fermer le menu"
+    data-action="click->layout#close"
+  >
+    <i class="fas fa-times" aria-hidden="true"></i>
+  </button>
+
+  {# Brand #}
+  <a class="sidebar-brand" href="{{ path('home') }}" aria-label="NUTRI CITY – Accueil">
+    <div class="brand-icon">
+      <i class="fas fa-seedling" aria-hidden="true"></i>
+    </div>
+    <div>
+      <span class="brand-name">NUTRI CITY</span>
+      <span class="brand-sub">Épicerie de l'Est</span>
+    </div>
+  </a>
+
+  {# Nav #}
+  <nav class="sidebar-nav" aria-label="Menu principal">
+    <div class="nav-label">Menu</div>
+
+    <a class="sidebar-link {% if app.request.attributes.get('_route') == 'home' %}is-active{% endif %}"
+       href="{{ path('home') }}">
+      <i class="fas fa-home" aria-hidden="true"></i>
+      <span>Accueil</span>
+    </a>
+
+    <a class="sidebar-link {% if app.request.attributes.get('_route') starts with 'catalogue' %}is-active{% endif %}"
+       href="{{ path('catalogue') }}">
+      <i class="fas fa-th-large" aria-hidden="true"></i>
+      <span>Nos produits</span>
+    </a>
+
+    <a class="sidebar-link {% if app.request.attributes.get('_route') == 'about' %}is-active{% endif %}"
+       href="{{ path('about') }}">
+      <i class="fas fa-leaf" aria-hidden="true"></i>
+      <span>À propos</span>
+    </a>
+
+    <a class="sidebar-link {% if app.request.attributes.get('_route') == 'contact' %}is-active{% endif %}"
+       href="{{ path('contact') }}">
+      <i class="fas fa-envelope" aria-hidden="true"></i>
+      <span>Contact</span>
+    </a>
+
+    <div class="nav-label">Commander</div>
+
+    {# Panier sidebar + badge #}
+    <a
+      class="sidebar-cart {% if app.request.attributes.get('_route') == 'click_collect' %}is-active{% endif %}"
+      href="{{ path('click_collect') }}"
+      data-controller="cart-badge"
+      data-cart-badge-url-value="{{ path('cart_data')|default('/panier/donnees') }}"
+    >
+      <div class="cart-icon-wrap">
+        <i class="fas fa-shopping-basket" aria-hidden="true"></i>
+        <span class="cart-count" data-cart-badge-target="sidebarCount"></span>
+      </div>
+
+      <div class="cart-details">
+        <span class="cart-label">Mon panier</span>
+        <span class="cart-sub">Click &amp; Collect · Sans inscription</span>
+      </div>
+    </a>
+  </nav>
+
+  {# Footer #}
+  <div class="sidebar-footer">
+    <div class="social-row">
+      <a href="#" class="social-btn" aria-label="Facebook"><i class="fab fa-facebook-f" aria-hidden="true"></i></a>
+      <a href="#" class="social-btn" aria-label="Instagram"><i class="fab fa-instagram" aria-hidden="true"></i></a>
+      <a href="#" class="social-btn" aria-label="WhatsApp"><i class="fab fa-whatsapp" aria-hidden="true"></i></a>
+      <a href="#" class="social-btn" aria-label="TikTok"><i class="fab fa-tiktok" aria-hidden="true"></i></a>
+    </div>
+    <div class="sidebar-copy">&copy; {{ 'now'|date('Y') }} NUTRI CITY</div>
+  </div>
+</aside>

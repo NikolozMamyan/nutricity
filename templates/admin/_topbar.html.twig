@@ -1,0 +1,191 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+  .topbar {
+    font-family: 'DM Sans', sans-serif;
+    height: var(--topbar-height);
+    background: rgba(254,250,224,.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,0,0,.07);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  /* ── Left: breadcrumb ────────────────────── */
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    min-width: 0;
+  }
+  .tb-home {
+    color: var(--text-muted);
+    text-decoration: none;
+    display: flex; align-items: center;
+    transition: color .15s;
+    flex-shrink: 0;
+  }
+  .tb-home:hover { color: var(--nutri-green); }
+  .tb-sep { color: rgba(0,0,0,.2); font-size: 15px; flex-shrink: 0; }
+  .tb-crumb {
+    font-weight: 600; color: var(--nutri-dark);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .tb-crumb-muted {
+    font-weight: 500; color: var(--text-muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* ── Right: actions ──────────────────────── */
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  /* Date/time pill */
+  .tb-datetime {
+    font-size: 12px; font-weight: 500; color: var(--text-muted);
+    background: rgba(255,255,255,.7); border: 1px solid var(--border);
+    padding: 5px 10px; border-radius: 20px;
+    display: flex; align-items: center; gap: 5px;
+  }
+
+  /* User pill */
+  .tb-user {
+    display: flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,.8); border: 1.5px solid var(--border);
+    padding: 5px 12px 5px 6px; border-radius: 20px;
+    font-size: 12px; font-weight: 600; color: var(--nutri-dark);
+    cursor: default;
+  }
+  .tb-user-dot {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--nutri-green-light), var(--nutri-green));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0;
+  }
+
+  /* Logout btn */
+  .tb-logout {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 12px; border-radius: 8px;
+    border: 1.5px solid rgba(188,108,37,.2);
+    background: rgba(188,108,37,.06); color: var(--warm-brown);
+    font-size: 12px; font-weight: 600; text-decoration: none;
+    font-family: 'DM Sans', sans-serif;
+    transition: all .15s;
+  }
+  .tb-logout:hover { background: var(--warm-brown); color: #fff; border-color: var(--warm-brown); }
+</style>
+
+{# ── Breadcrumb logic ─────────────────────── #}
+{% set r = app.request.attributes.get('_route') %}
+{% if r starts with 'admin_orders' %}
+  {% set section = 'Commandes' %}
+  {% set section_path = path('admin_orders_index') %}
+{% elseif r starts with 'admin_products' %}
+  {% set section = 'Produits' %}
+  {% set section_path = path('admin_products_index') %}
+{% elseif r starts with 'admin_categories' %}
+  {% set section = 'Catégories' %}
+  {% set section_path = path('admin_categories_index') %}
+{% elseif r starts with 'admin_users' %}
+  {% set section = 'Utilisateurs' %}
+  {% set section_path = path('admin_users_index') %}
+{% elseif r starts with 'admin_carts' %}
+  {% set section = 'Paniers abandonnés' %}
+  {% set section_path = path('admin_carts_index') %}
+{% elseif r starts with 'admin_dashboard' %}
+  {% set section = 'Dashboard' %}
+  {% set section_path = path('admin_dashboard') %}
+{% else %}
+  {% set section = '' %}
+  {% set section_path = null %}
+{% endif %}
+
+{# Sub-page label #}
+{% if r == 'admin_orders_show' %}
+  {% set subpage = app.request.attributes.get('id') ? '#' ~ app.request.attributes.get('id') : 'Détail' %}
+{% elseif r == 'admin_orders_new' %}
+  {% set subpage = 'Nouvelle commande' %}
+{% elseif r == 'admin_orders_add_item' %}
+  {% set subpage = 'Ajouter un article' %}
+{% elseif r ends with '_new' or r ends with '_create' %}
+  {% set subpage = 'Nouveau' %}
+{% elseif r ends with '_edit' %}
+  {% set subpage = 'Modifier' %}
+{% else %}
+  {% set subpage = null %}
+{% endif %}
+
+<div class="topbar-left">
+  <a href="{{ path('admin_dashboard') }}" class="tb-home" title="Dashboard">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+  </a>
+
+  {% if section %}
+    <span class="tb-sep">/</span>
+    {% if subpage %}
+      <a href="{{ section_path }}" class="tb-crumb-muted" style="text-decoration:none;">{{ section }}</a>
+      <span class="tb-sep">/</span>
+      <span class="tb-crumb">{{ subpage }}</span>
+    {% else %}
+      <span class="tb-crumb">{{ section }}</span>
+    {% endif %}
+  {% endif %}
+</div>
+
+<div class="topbar-right">
+
+  {# Live clock #}
+  <div class="tb-datetime" id="tbClock">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+    </svg>
+    <span id="tbClockText">—</span>
+  </div>
+
+  {% if app.user %}
+    <div class="tb-user">
+      <div class="tb-user-dot">{{ app.user.email|first|upper }}</div>
+      <span>{{ app.user.email|split('@')|first }}</span>
+    </div>
+    <a href="{{ path('app_logout') }}" class="tb-logout">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Déconnexion
+    </a>
+  {% endif %}
+
+</div>
+
+<script>
+(function () {
+  const el = document.getElementById('tbClockText');
+  if (!el) return;
+  function tick() {
+    const now = new Date();
+    const d = now.toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short' });
+    const t = now.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+    el.textContent = d + ' · ' + t;
+  }
+  tick();
+  setInterval(tick, 30000);
+})();
+</script>

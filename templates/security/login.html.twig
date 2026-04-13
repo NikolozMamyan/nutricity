@@ -1,0 +1,322 @@
+{# templates/security/login.html.twig #}
+{% extends 'auth_base.html.twig' %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block body %}
+  <section class="auth">
+    <div class="auth-card">
+      <div class="auth-head">
+        <div class="auth-badge">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <h1 class="auth-title">Connexion</h1>
+        <p class="auth-sub">Accède à ton espace admin Épicerie.</p>
+      </div>
+
+      {# erreur Symfony (si mauvaise auth) #}
+      {% if error %}
+        <div class="auth-alert auth-alert-danger">
+          <span class="auth-alert-icon">✕</span>
+          <span>{{ error.messageKey|trans(error.messageData, 'security') }}</span>
+        </div>
+      {% endif %}
+
+      <form method="post" class="auth-form">
+        <div class="auth-field">
+          <label for="inputEmail">Email</label>
+          <div class="auth-input">
+            <span class="auth-ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M4 4h16v16H4z"/><path d="m22 6-10 7L2 6"/>
+              </svg>
+            </span>
+            <input
+              type="email"
+              value="{{ last_username }}"
+              name="_username"
+              id="inputEmail"
+              autocomplete="email"
+              placeholder="ex: admin@epicerie.fr"
+              required
+              autofocus
+            >
+          </div>
+        </div>
+
+        <div class="auth-field">
+          <label for="inputPassword">Mot de passe</label>
+          <div class="auth-input">
+            <span class="auth-ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <rect x="3" y="11" width="18" height="11" rx="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </span>
+            <input
+              type="password"
+              name="_password"
+              id="inputPassword"
+              autocomplete="current-password"
+              placeholder="••••••••"
+              required
+            >
+            <button class="auth-toggle" type="button" aria-label="Afficher le mot de passe" data-toggle-pass>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="auth-row">
+          <label class="auth-check">
+            <input type="checkbox" name="_remember_me">
+            <span>Se souvenir de moi</span>
+          </label>
+
+          {# si tu as une route reset mdp, décommente #}
+          {# <a class="auth-link" href="{{ path('app_forgot_password_request') }}">Mot de passe oublié ?</a> #}
+        </div>
+
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+        <button class="auth-btn" type="submit">
+          <span>Se connecter</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M5 12h14"/><path d="m13 5 7 7-7 7"/>
+          </svg>
+        </button>
+
+        <p class="auth-foot">
+          Besoin d’accès ? <a class="auth-link" href="#">Contacter l’administrateur</a>
+        </p>
+      </form>
+    </div>
+  </section>
+
+  <style>
+    /* Page login — s’appuie sur tes variables : warm-cream, green-800/900, radius, shadow... */
+    .auth{
+      position: relative;
+      min-height: calc(100vh - var(--header-h, 0px));
+      display: grid;
+      place-items: center;
+      padding: 42px 18px;
+      background:
+        radial-gradient(900px 500px at 10% 10%, rgba(82,183,136,.18), transparent 60%),
+        radial-gradient(800px 520px at 90% 30%, rgba(221,161,94,.18), transparent 60%),
+        var(--warm-cream);
+    }
+
+    .auth-card{
+      width: min(460px, 100%);
+      background: rgba(255,255,255,0.78);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 18px;
+      box-shadow: var(--shadow-md);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      overflow: hidden;
+      position: relative;
+      z-index: 2;
+    }
+
+    .auth-head{
+      padding: 22px 22px 14px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      background:
+        linear-gradient(135deg, rgba(82,183,136,.16), rgba(221,161,94,.10));
+    }
+
+    .auth-badge{
+      width: 44px; height: 44px;
+      border-radius: 14px;
+      display: grid; place-items: center;
+      background: rgba(45,106,79,0.10);
+      color: var(--green-800);
+      margin-bottom: 10px;
+      box-shadow: 0 10px 24px rgba(27,67,50,0.10);
+    }
+
+    .auth-title{
+      font-size: 1.25rem;
+      font-weight: 900;
+      letter-spacing: .2px;
+      color: var(--green-900);
+      margin-bottom: 4px;
+    }
+
+    .auth-sub{
+      font-size: .86rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .auth-form{ padding: 18px 22px 22px; }
+
+    .auth-alert{
+      display:flex; align-items:center; gap:10px;
+      margin: 14px 22px 0;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: .85rem;
+      font-weight: 600;
+    }
+    .auth-alert-danger{
+      background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.20);
+      color: #991b1b;
+    }
+    .auth-alert-icon{
+      width: 26px; height: 26px;
+      border-radius: 10px;
+      display:grid; place-items:center;
+      background: rgba(239,68,68,0.10);
+      flex-shrink: 0;
+      font-weight: 900;
+    }
+
+    .auth-field{ margin-bottom: 14px; }
+    .auth-field label{
+      display:block;
+      font-size: .78rem;
+      font-weight: 800;
+      color: var(--green-900);
+      margin-bottom: 6px;
+      letter-spacing: .2px;
+    }
+
+    .auth-input{
+      display:flex; align-items:center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,0.08);
+      background: rgba(255,255,255,0.9);
+      transition: border var(--transition), box-shadow var(--transition), transform var(--transition);
+    }
+    .auth-input:focus-within{
+      border-color: rgba(45,106,79,0.35);
+      box-shadow: 0 0 0 4px rgba(82,183,136,0.18);
+      transform: translateY(-1px);
+    }
+
+    .auth-ico{
+      width: 34px; height: 34px;
+      border-radius: 12px;
+      display:grid; place-items:center;
+      background: rgba(216,243,220,0.9);
+      color: var(--green-800);
+      flex-shrink: 0;
+    }
+
+    .auth-input input{
+      border: none;
+      outline: none;
+      background: transparent;
+      width: 100%;
+      font-size: .92rem;
+      color: var(--text-dark);
+      font-family: inherit;
+    }
+    .auth-input input::placeholder{ color: rgba(107,114,128,.8); }
+
+    .auth-toggle{
+      border: none;
+      background: rgba(0,0,0,0.04);
+      color: var(--text-muted);
+      width: 34px; height: 34px;
+      border-radius: 12px;
+      display:grid; place-items:center;
+      cursor: pointer;
+      transition: background var(--transition), color var(--transition), transform var(--transition);
+      flex-shrink: 0;
+    }
+    .auth-toggle:hover{
+      background: rgba(45,106,79,0.10);
+      color: var(--green-800);
+      transform: translateY(-1px);
+    }
+
+    .auth-row{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 6px 0 14px;
+      flex-wrap: wrap;
+    }
+
+    .auth-check{
+      display:flex; align-items:center; gap: 8px;
+      font-size: .82rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      user-select: none;
+    }
+    .auth-check input{
+      width: 16px; height: 16px;
+      accent-color: var(--green-800);
+    }
+
+    .auth-btn{
+      width: 100%;
+      display:flex; align-items:center; justify-content:center; gap: 10px;
+      border: none;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--green-800), var(--green-500));
+      color: #fff;
+      font-weight: 900;
+      letter-spacing: .2px;
+      cursor: pointer;
+      box-shadow: 0 14px 30px rgba(45,106,79,0.20);
+      transition: transform var(--transition), box-shadow var(--transition), filter var(--transition);
+    }
+    .auth-btn:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 18px 40px rgba(45,106,79,0.24);
+      filter: saturate(1.05);
+    }
+    .auth-btn:active{ transform: translateY(0); }
+
+    .auth-foot{
+      margin-top: 12px;
+      font-size: .8rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .auth-link{
+      color: var(--green-800);
+      font-weight: 800;
+      transition: color var(--transition);
+    }
+    .auth-link:hover{ color: var(--green-900); }
+
+
+    /* responsive */
+    @media (max-width: 520px){
+      .auth-head{ padding: 18px 16px 12px; }
+      .auth-form{ padding: 16px; }
+      .auth-alert{ margin: 12px 16px 0; }
+    }
+  </style>
+
+  <script>
+    // Toggle password
+    const btn = document.querySelector('[data-toggle-pass]');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        const input = document.getElementById('inputPassword');
+        if (!input) return;
+        input.type = (input.type === 'password') ? 'text' : 'password';
+      });
+    }
+  </script>
+{% endblock %}

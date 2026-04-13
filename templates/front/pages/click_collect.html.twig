@@ -1,0 +1,1461 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Click & Collect – Mon panier – NUTRI CITY{% endblock %}
+{% block meta_desc %}Finalisez votre commande Click & Collect chez NUTRI CITY. Choisissez votre créneau et renseignez vos coordonnées.{% endblock %}
+
+
+
+{% block body %}
+<style>
+/* ============================================================
+   CLICK & COLLECT (Panier) — CSS complet (sans Bootstrap)
+   Palette = tes variables : --green-900/800/500/300/100, --tan, --brown, --cream, --text, --text-muted, etc.
+   Dépendances: Font Awesome déjà chargé.
+============================================================ */
+
+/* ---------- Base helpers (optionnel, safe) ---------- */
+.cc-main * { box-sizing: border-box; }
+.cc-main { color: var(--text); }
+
+/* ============================================================
+   HEADER
+============================================================ */
+.cc-page-header{
+  background:
+    radial-gradient(ellipse at 60% 35%, rgba(116,198,157,0.18) 0%, transparent 60%),
+    radial-gradient(ellipse at 10% 80%, rgba(82,183,136,0.10) 0%, transparent 55%),
+    linear-gradient(150deg, var(--green-900), var(--green-800));
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.cc-page-header::after{
+  content: '\f291';
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  position: absolute;
+  right: -2.2rem;
+  bottom: -5rem;
+  font-size: 16rem;
+  color: rgba(255,255,255,0.035);
+  pointer-events: none;
+  line-height: 1;
+}
+
+.cc-page-header-inner{
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 2.2rem 1.6rem 1.6rem;
+  position: relative;
+  z-index: 1;
+}
+
+.cc-breadcrumb{
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  font-size: .82rem;
+  margin-bottom: .9rem;
+  flex-wrap: wrap;
+}
+.cc-breadcrumb-link{
+  color: rgba(255,255,255,0.62);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  transition: color .18s ease;
+}
+.cc-breadcrumb-link:hover{ color: var(--green-300); }
+.cc-breadcrumb-sep{
+  color: rgba(255,255,255,0.25);
+}
+.cc-breadcrumb-current{
+  color: var(--green-300);
+  font-weight: 600;
+}
+
+.cc-header-row{
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.cc-title{
+  margin: 0 0 .35rem;
+  font-size: clamp(1.55rem, 3.4vw, 2.45rem);
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.12;
+  display: inline-flex;
+  align-items: center;
+  gap: .65rem;
+}
+.cc-title i{ color: var(--green-300); }
+
+.cc-subtitle{
+  margin: 0;
+  color: rgba(255,255,255,0.68);
+  font-size: .92rem;
+  line-height: 1.6;
+  max-width: 60ch;
+}
+
+.cc-store-pill{
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .7rem 1rem;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.86);
+  font-size: .86rem;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+}
+.cc-store-pill i{ color: var(--green-300); }
+
+/* ============================================================
+   MAIN WRAP
+============================================================ */
+.cc-main{
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 1.6rem 1.6rem 4rem;
+}
+
+/* ============================================================
+   STEPPER
+============================================================ */
+.cc-stepper{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .6rem;
+  margin: 1.3rem 0 1.7rem;
+  align-items: stretch;
+}
+
+.cc-step-item{
+  appearance: none;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: #fff;
+  border-radius: 16px;
+  padding: .85rem .9rem;
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  text-align: left;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.cc-step-circle{
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green-100);
+  color: var(--green-800);
+  flex-shrink: 0;
+  border: 1px solid rgba(45,106,79,0.12);
+}
+
+.cc-step-label{
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.55);
+}
+
+.cc-step-item:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(0,0,0,0.08);
+  border-color: rgba(45,106,79,0.18);
+}
+
+.cc-step-item.is-active{
+  background:
+    radial-gradient(ellipse at 30% 30%, rgba(116,198,157,0.22) 0%, transparent 60%),
+    linear-gradient(160deg, rgba(255,255,255,0.96) 0%, rgba(216,243,220,0.6) 100%);
+  border-color: rgba(82,183,136,0.35);
+}
+.cc-step-item.is-active .cc-step-circle{
+  background: linear-gradient(135deg, var(--green-800), var(--green-500));
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 8px 22px rgba(45,106,79,0.25);
+}
+.cc-step-item.is-active .cc-step-label{
+  color: var(--green-800);
+}
+
+/* (Optionnel si ton JS ajoute "is-done") */
+.cc-step-item.is-done{
+  border-color: rgba(45,106,79,0.15);
+}
+.cc-step-item.is-done .cc-step-circle{
+  background: rgba(82,183,136,0.12);
+  color: var(--green-800);
+}
+
+/* ============================================================
+   PANELS (step)
+============================================================ */
+.cc-step-panel{ display: none; }
+.cc-step-panel.is-active{
+  display: block;
+  animation: ccFadeUp .25s ease both;
+}
+@keyframes ccFadeUp{
+  from{ opacity: 0; transform: translateY(10px); }
+  to{ opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   LAYOUT (2 columns)
+============================================================ */
+.cc-layout{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 1.4rem;
+  align-items: start;
+}
+.cc-left{ min-width: 0; }
+.cc-right{ min-width: 0; }
+
+/* ============================================================
+   CARDS
+============================================================ */
+.cc-card{
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.07);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.06);
+}
+
+.cc-card-header{
+  padding: 1.05rem 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  background:
+    radial-gradient(ellipse at 0% 0%, rgba(116,198,157,0.10) 0%, transparent 65%),
+    linear-gradient(180deg, rgba(254,250,224,0.55) 0%, #fff 100%);
+}
+
+.cc-card-title{
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: var(--green-900);
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+}
+.cc-card-title i{ color: var(--green-800); }
+
+.cc-card-subtitle{
+  margin-left: .35rem;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.cc-card-body{
+  padding: .6rem 0;
+}
+
+/* Help text */
+.cc-help{
+  margin: 0 0 1rem;
+  padding: .9rem 1rem;
+  border-radius: 14px;
+  background: rgba(82,183,136,0.10);
+  border: 1px solid rgba(82,183,136,0.22);
+  color: rgba(0,0,0,0.65);
+  font-size: .92rem;
+  line-height: 1.55;
+  display: flex;
+  align-items: flex-start;
+  gap: .6rem;
+}
+.cc-help i{ color: var(--green-800); margin-top: .1rem; }
+
+/* ============================================================
+   BUTTONS
+============================================================ */
+.cc-btn-primary,
+.cc-btn-next,
+.cc-btn-confirm{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .6rem;
+  width: 100%;
+  padding: .95rem 1rem;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 800;
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+}
+
+.cc-btn-primary{
+  background: linear-gradient(135deg, var(--tan), var(--brown));
+  color: #fff;
+  box-shadow: 0 10px 26px rgba(221,161,94,0.35);
+}
+.cc-btn-primary:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(221,161,94,0.46);
+  color: #fff;
+}
+
+.cc-btn-next{
+  background: linear-gradient(135deg, var(--tan), var(--brown));
+  color: #fff;
+  box-shadow: 0 10px 26px rgba(221,161,94,0.35);
+}
+.cc-btn-next:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(221,161,94,0.46);
+  color: #fff;
+}
+.cc-btn-next:disabled{
+  opacity: .55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  filter: grayscale(.2);
+}
+
+.cc-btn-confirm{
+  background: linear-gradient(135deg, var(--green-800), var(--green-500));
+  color: #fff;
+  box-shadow: 0 12px 28px rgba(45,106,79,0.25);
+}
+.cc-btn-confirm:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px rgba(45,106,79,0.34);
+  color: #fff;
+}
+
+.cc-btn-prev{
+  margin-top: .65rem;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .55rem;
+  padding: .85rem 1rem;
+  border-radius: 16px;
+  background: #fff;
+  border: 1.5px solid rgba(0,0,0,0.10);
+  color: rgba(0,0,0,0.58);
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-color .18s ease, color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+.cc-btn-prev:hover{
+  border-color: rgba(45,106,79,0.35);
+  color: var(--green-800);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.06);
+}
+
+.cc-btn-danger{
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .55rem .8rem;
+  border-radius: 12px;
+  border: 1px solid rgba(239,68,68,0.24);
+  background: rgba(239,68,68,0.08);
+  color: #dc2626;
+  font-weight: 800;
+  font-size: .82rem;
+  cursor: pointer;
+  transition: background .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+.cc-btn-danger:hover{
+  background: rgba(239,68,68,0.14);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(239,68,68,0.10);
+}
+
+/* backlink */
+.cc-backlink-wrap{ margin-top: .9rem; }
+.cc-backlink{
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .9rem;
+  font-weight: 800;
+  color: var(--green-800);
+  text-decoration: none;
+  transition: transform .18s ease, color .18s ease;
+}
+.cc-backlink:hover{
+  transform: translateX(-2px);
+  color: var(--green-900);
+}
+
+/* ============================================================
+   CART ITEMS (rendered by Stimulus)
+   NOTE: ton JS crée .cart-item, .cart-item-img, etc.
+============================================================ */
+.cart-item{
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  transition: background .18s ease;
+}
+.cart-item:hover{ background: rgba(0,0,0,0.015); }
+.cart-item:last-child{ border-bottom: none; }
+
+.cart-item-img{
+  width: 68px;
+  height: 68px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--green-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(45,106,79,0.10);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.06);
+}
+.cart-item-img img{ width: 100%; height: 100%; object-fit: cover; }
+.cart-item-img i{ font-size: 1.6rem; color: var(--green-800); opacity: .30; }
+
+.cart-item-info{ min-width: 0; }
+.cart-item-name{
+  font-size: .95rem;
+  font-weight: 900;
+  color: var(--green-900);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin-bottom: .2rem;
+}
+.cart-item-price{
+  font-size: .82rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.cart-item-controls{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: .55rem;
+}
+
+.qty-control{
+  display: inline-flex;
+  align-items: center;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--cream);
+  border: 1px solid rgba(0,0,0,0.10);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+}
+.qty-btn{
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: transparent;
+  color: var(--green-800);
+  cursor: pointer;
+  transition: background .15s ease, transform .15s ease;
+}
+.qty-btn:hover{
+  background: rgba(82,183,136,0.14);
+  transform: translateY(-1px);
+}
+.qty-input{
+  width: 42px;
+  height: 34px;
+  border: none;
+  background: transparent;
+  text-align: center;
+  font-weight: 900;
+  color: var(--green-900);
+  outline: none;
+}
+
+.cart-item-subtotal{
+  font-size: .98rem;
+  font-weight: 950;
+  color: var(--green-800);
+  white-space: nowrap;
+}
+
+.btn-remove-item{
+  border: none;
+  background: transparent;
+  width: 34px;
+  height: 30px;
+  border-radius: 10px;
+  color: rgba(0,0,0,0.28);
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+.btn-remove-item:hover{
+  background: rgba(239,68,68,0.10);
+  color: #dc2626;
+}
+
+/* Empty state */
+.cc-empty{
+  padding: 3.2rem 1.2rem;
+  text-align: center;
+}
+.cc-empty-icon{
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  background: rgba(82,183,136,0.16);
+  border: 1px solid rgba(82,183,136,0.20);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--green-800);
+  font-size: 1.9rem;
+  margin-bottom: 1.1rem;
+  box-shadow: 0 14px 30px rgba(45,106,79,0.10);
+}
+.cc-empty-title{
+  margin: 0 0 .35rem;
+  font-weight: 950;
+  color: var(--green-900);
+  font-size: 1.2rem;
+}
+.cc-empty-text{
+  margin: 0 auto 1.2rem;
+  color: var(--text-muted);
+  max-width: 42ch;
+  line-height: 1.55;
+}
+
+/* ============================================================
+   SUMMARY (sticky sidebar)
+============================================================ */
+.cc-summary{
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.07);
+  border-radius: 20px;
+  overflow: hidden;
+  position: sticky;
+  top: calc(var(--header-h) + 18px);
+  box-shadow: 0 12px 34px rgba(0,0,0,0.07);
+}
+
+.cc-summary-header{
+  padding: 1.05rem 1.2rem;
+  background:
+    radial-gradient(ellipse at 10% 10%, rgba(116,198,157,0.18) 0%, transparent 55%),
+    linear-gradient(135deg, var(--green-900), var(--green-800));
+  color: #fff;
+}
+
+.cc-summary-title{
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 950;
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+}
+.cc-summary-title i{ color: var(--green-300); }
+
+.cc-summary-body{
+  padding: 1rem 1.2rem 1.2rem;
+}
+
+.summary-row{
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: .7rem;
+  padding: .35rem 0;
+  color: rgba(0,0,0,0.62);
+  font-size: .9rem;
+}
+.summary-row span:first-child{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 70%;
+}
+.summary-row span:last-child{
+  color: rgba(0,0,0,0.70);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.cc-summary-total{
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: .7rem;
+  margin-top: .85rem;
+  padding-top: .85rem;
+  border-top: 2px solid rgba(0,0,0,0.07);
+}
+.cc-summary-total-label{
+  font-weight: 950;
+  color: var(--green-900);
+}
+.cc-summary-total-amount{
+  font-size: 1.55rem;
+  font-weight: 980;
+  color: var(--green-800);
+}
+
+.cc-note{
+  margin: .65rem 0 0;
+  font-size: .82rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  display: flex;
+  gap: .55rem;
+  align-items: flex-start;
+}
+.cc-note i{ color: var(--green-800); margin-top: .1rem; }
+
+.cc-trust{
+  padding: .95rem 1.2rem 1.1rem;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: .65rem;
+  background: linear-gradient(180deg, #fff 0%, rgba(254,250,224,0.55) 100%);
+}
+.cc-trust-item{
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  font-size: .86rem;
+  color: rgba(0,0,0,0.60);
+  font-weight: 650;
+}
+.cc-trust-item i{
+  width: 18px;
+  color: var(--green-800);
+}
+
+/* Selected slot box */
+.cc-selected-slot{
+  margin-top: .85rem;
+  padding: .75rem .85rem;
+  border-radius: 14px;
+  background: rgba(82,183,136,0.14);
+  border: 1px solid rgba(82,183,136,0.25);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: .8rem;
+}
+.cc-selected-slot-label{
+  color: var(--green-800);
+  font-weight: 900;
+  font-size: .86rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+}
+.cc-selected-slot-value{
+  color: var(--green-900);
+  font-weight: 950;
+  font-size: .88rem;
+  white-space: nowrap;
+}
+.cc-selected-slot.is-always{ display: flex; }
+
+/* ============================================================
+   SLOTS (Step 2)
+============================================================ */
+.cc-day-group{
+  padding: 0 1rem 1.2rem;
+}
+.cc-day-group + .cc-day-group{
+  border-top: 1px dashed rgba(0,0,0,0.10);
+  padding-top: 1.2rem;
+}
+
+.cc-day-group-label{
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  font-size: .86rem;
+  font-weight: 950;
+  color: var(--green-800);
+  letter-spacing: .4px;
+  margin-bottom: .9rem;
+}
+.cc-day-group-label i{ color: var(--green-800); }
+.cc-day-group-sub{
+  font-weight: 800;
+  color: rgba(0,0,0,0.45);
+  font-size: .84rem;
+}
+
+.cc-slots-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: .7rem;
+}
+
+.cc-slot-card{
+  position: relative;
+  border-radius: 16px;
+  padding: .95rem .85rem;
+  background: #fff;
+  border: 1.5px solid rgba(0,0,0,0.10);
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+  user-select: none;
+}
+
+.cc-slot-card:hover{
+  transform: translateY(-2px);
+  border-color: rgba(45,106,79,0.30);
+  background: rgba(216,243,220,0.50);
+  box-shadow: 0 14px 28px rgba(45,106,79,0.10);
+}
+
+.cc-slot-card input[type="radio"]{
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  pointer-events: none;
+}
+
+.cc-slot-day{
+  font-size: .72rem;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.45);
+  font-weight: 900;
+}
+
+.cc-slot-time{
+  font-size: 1.02rem;
+  font-weight: 980;
+  color: var(--green-900);
+}
+
+.cc-slot-check{
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--green-800);
+  color: #fff;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: .70rem;
+  box-shadow: 0 10px 18px rgba(45,106,79,0.22);
+}
+
+/* sélection (ton JS doit ajouter .selected sur label) */
+.cc-slot-card.selected{
+  border-color: rgba(45,106,79,0.55);
+  background: rgba(216,243,220,0.65);
+  box-shadow: 0 16px 30px rgba(45,106,79,0.12);
+  transform: translateY(-2px);
+}
+.cc-slot-card.selected .cc-slot-day{ color: var(--green-800); }
+.cc-slot-card.selected .cc-slot-check{ display: inline-flex; }
+
+/* ============================================================
+   FORM (Step 3)
+============================================================ */
+.cc-form{ margin-top: .8rem; }
+
+.cc-form-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  padding: 0 1rem 1.2rem;
+}
+
+.cc-field{ display: flex; flex-direction: column; gap: .45rem; }
+.cc-field-full{ grid-column: 1 / -1; }
+
+.cc-label{
+  font-size: .86rem;
+  font-weight: 900;
+  color: var(--green-900);
+}
+.cc-required{ color: #ef4444; }
+.cc-optional{ color: var(--text-muted); font-weight: 700; font-size: .82rem; }
+
+.cc-input, .cc-textarea{
+  width: 100%;
+  border-radius: 14px;
+  border: 1.5px solid rgba(0,0,0,0.10);
+  background: var(--cream);
+  padding: .85rem .95rem;
+  font-size: .95rem;
+  color: var(--text);
+  outline: none;
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+.cc-input:focus, .cc-textarea:focus{
+  background: #fff;
+  border-color: rgba(45,106,79,0.55);
+  box-shadow: 0 0 0 4px rgba(45,106,79,0.10);
+}
+
+.cc-textarea{
+  min-height: 110px;
+  resize: vertical;
+}
+
+.cc-error{
+  display: none;
+  font-size: .82rem;
+  font-weight: 800;
+  color: #dc2626;
+}
+.cc-error.show{ display: block; }
+
+/* ============================================================
+   CONFIRMATION SCREEN
+============================================================ */
+.cc-confirmation{
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.07);
+  border-radius: 22px;
+  display: none;
+  padding: 3rem 1.6rem;
+  text-align: center;
+  box-shadow: 0 18px 48px rgba(0,0,0,0.08);
+  max-width: 820px;
+  margin: 1.6rem auto 0;
+  animation: ccPop .35s ease both;
+}
+@keyframes ccPop{
+  from{ opacity: 0; transform: translateY(14px) scale(.98); }
+  to{ opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.cc-confirmation-icon{
+  font-size: 3.3rem;
+  margin-bottom: .6rem;
+}
+
+
+.cc-confirmation.is-visible {
+  display: block;
+}
+.cc-slot-card.is-disabled {
+  filter: grayscale(.2);
+}
+.cc-confirmation-title{
+  margin: 0 0 .4rem;
+  font-size: clamp(1.4rem, 3.2vw, 2rem);
+  font-weight: 980;
+  color: var(--green-900);
+}
+.cc-confirmation-text{
+  margin: 0 auto 1.2rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+  max-width: 60ch;
+}
+
+.cc-confirmation-ref{
+  display: inline-flex;
+  flex-direction: column;
+  gap: .25rem;
+  margin: 1rem auto 1.2rem;
+  padding: .85rem 1.1rem;
+  border-radius: 16px;
+  background: rgba(82,183,136,0.14);
+  border: 1px solid rgba(82,183,136,0.22);
+}
+.cc-confirmation-ref-label{
+  font-size: .82rem;
+  font-weight: 900;
+  color: var(--green-800);
+  letter-spacing: .8px;
+  text-transform: uppercase;
+}
+.cc-confirmation-ref-value{
+  font-size: 1.25rem;
+  font-weight: 980;
+  color: var(--green-900);
+}
+.cc-confirmation-details{
+  margin: 0 auto 1.5rem;
+  color: rgba(0,0,0,0.62);
+  line-height: 1.6;
+  max-width: 62ch;
+}
+
+/* ============================================================
+   TOASTS (si tu utilises un container spécifique)
+============================================================ */
+.cc-toast-container{
+  position: fixed;
+  right: 18px;
+  bottom: 22px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+@media (max-width: 980px){
+  .cc-layout{ grid-template-columns: 1fr; }
+  .cc-summary{ position: static; }
+  .cc-stepper{ grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 720px){
+  .cc-page-header-inner{ padding: 1.8rem 1.1rem 1.3rem; }
+  .cc-main{ padding: 1.1rem 1.1rem 3.2rem; }
+  .cc-store-pill{ width: 100%; justify-content: center; }
+
+  .cart-item{
+    grid-template-columns: 56px minmax(0,1fr) auto;
+    padding: .9rem 1rem;
+    gap: .75rem;
+  }
+  .cart-item-img{ width: 56px; height: 56px; border-radius: 14px; }
+  .cc-form-grid{ grid-template-columns: 1fr; }
+  .cc-slots-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 420px){
+  .cc-stepper{ grid-template-columns: 1fr; }
+  .cc-slots-grid{ grid-template-columns: 1fr; }
+  .qty-input{ width: 38px; }
+}
+</style>
+
+
+
+{# ── TOAST CONTAINER (si ton controller en a besoin) ── #}
+<div class="cc-toast-container" aria-live="polite" data-click-collect-target="toastContainer"></div>
+
+{# ── PAGE HEADER ── #}
+<header class="cc-page-header">
+  <div class="cc-page-header-inner">
+    <nav class="cc-breadcrumb" aria-label="Fil d'Ariane">
+      <a class="cc-breadcrumb-link" href="{{ path('home') }}">
+        <i class="fas fa-home" aria-hidden="true"></i>
+        Accueil
+      </a>
+      <span class="cc-breadcrumb-sep" aria-hidden="true">›</span>
+      <span class="cc-breadcrumb-current">Click &amp; Collect</span>
+    </nav>
+
+    <div class="cc-header-row">
+      <div class="cc-header-left">
+        <h1 class="cc-title">
+          <i class="fas fa-bag-shopping" aria-hidden="true"></i>
+          Mon panier
+        </h1>
+        <p class="cc-subtitle">
+          Commandez et récupérez vos produits sans attente · Aucun compte requis
+        </p>
+      </div>
+
+      <div class="cc-header-right">
+        <div class="cc-store-pill">
+          <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+          Retrait : Strasbourg – Lun/Sam 9h–20h
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+{# ─────────────────────────────────────────────────────────────
+   MAIN + STIMULUS
+   ───────────────────────────────────────────────────────────── #}
+<section
+  class="cc-main"
+  id="mainContent"
+  data-controller="click-collect"
+  data-click-collect-routes-value='{
+    "add":"{{ path("cart_add", {id: 0})|replace({"0": ""}) }}",
+    "update":"{{ path("cart_update", {id: 0})|replace({"0": ""}) }}",
+    "remove":"{{ path("cart_remove", {id: 0})|replace({"0": ""}) }}",
+    "clear":"{{ path("cart_clear") }}",
+    "checkout":"{{ path("cart_checkout") }}",
+    "data":"{{ path("cart_data") }}"
+  }'
+>
+  {# ── STEPPER ── #}
+  <div class="cc-stepper" data-click-collect-target="stepper">
+    <button type="button" class="cc-step-item is-active"
+            data-step="1" data-action="click->click-collect#goToStep">
+      <span class="cc-step-circle"><i class="fas fa-cart-shopping" aria-hidden="true"></i></span>
+      <span class="cc-step-label">Panier</span>
+    </button>
+
+    <button type="button" class="cc-step-item"
+            data-step="2" data-action="click->click-collect#goToStep">
+      <span class="cc-step-circle"><i class="fas fa-clock" aria-hidden="true"></i></span>
+      <span class="cc-step-label">Créneau</span>
+    </button>
+
+    <button type="button" class="cc-step-item"
+            data-step="3" data-action="click->click-collect#goToStep">
+      <span class="cc-step-circle"><i class="fas fa-user" aria-hidden="true"></i></span>
+      <span class="cc-step-label">Coordonnées</span>
+    </button>
+
+    <button type="button" class="cc-step-item"
+            data-step="4" data-action="click->click-collect#goToStep">
+      <span class="cc-step-circle"><i class="fas fa-check" aria-hidden="true"></i></span>
+      <span class="cc-step-label">Confirmation</span>
+    </button>
+  </div>
+
+  {# ==============================
+     STEP 1 — PANIER
+     ============================== #}
+  <div class="cc-step-panel is-active" id="panel1" data-click-collect-target="panel">
+    <div class="cc-layout">
+
+      {# LEFT #}
+      <div class="cc-left">
+        <section class="cc-card">
+          <header class="cc-card-header">
+            <h2 class="cc-card-title">
+              <i class="fas fa-list-check" aria-hidden="true"></i>
+              Mes articles
+              <span class="cc-card-subtitle" data-click-collect-target="cartCountLabel"></span>
+            </h2>
+
+            <button class="cc-btn-danger"
+                    type="button"
+                    data-action="click->click-collect#clearCart"
+                    aria-label="Vider le panier">
+              <i class="fas fa-trash" aria-hidden="true"></i>
+              Vider
+            </button>
+          </header>
+
+          <div class="cc-card-body" data-click-collect-target="cartItemsList">
+            {# Rempli par Stimulus #}
+
+            <div class="cc-empty" data-click-collect-target="cartEmptyMsg" style="display:none;">
+              <div class="cc-empty-icon"><i class="fas fa-basket-shopping" aria-hidden="true"></i></div>
+              <h3 class="cc-empty-title">Votre panier est vide</h3>
+              <p class="cc-empty-text">Parcourez notre catalogue et ajoutez vos produits favoris.</p>
+
+              <a class="cc-btn-primary" href="{{ path('catalogue') }}">
+                <i class="fas fa-store" aria-hidden="true"></i>
+                Voir nos produits
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <div class="cc-backlink-wrap">
+          <a class="cc-backlink" href="{{ path('catalogue') }}">
+            <i class="fas fa-arrow-left" aria-hidden="true"></i>
+            Continuer mes achats
+          </a>
+        </div>
+      </div>
+
+      {# RIGHT #}
+      <aside class="cc-right">
+        <section class="cc-summary">
+          <header class="cc-summary-header">
+            <h2 class="cc-summary-title">
+              <i class="fas fa-receipt" aria-hidden="true"></i>
+              Récapitulatif
+            </h2>
+          </header>
+
+          <div class="cc-summary-body">
+            <div data-click-collect-target="summaryLines1"></div>
+
+            <div class="cc-summary-total">
+              <span class="cc-summary-total-label">Total</span>
+              <span class="cc-summary-total-amount" data-click-collect-target="summaryTotal1">0,00 €</span>
+            </div>
+
+            <button class="cc-btn-next"
+                    type="button"
+                    data-step="2"
+                    data-action="click->click-collect#goToStep"
+                    data-click-collect-target="btnToStep2"
+                    disabled>
+              Choisir un créneau
+              <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div class="cc-trust">
+            <div class="cc-trust-item"><i class="fas fa-circle-check" aria-hidden="true"></i> Aucun compte requis</div>
+            <div class="cc-trust-item"><i class="fas fa-clock" aria-hidden="true"></i> Retrait sous 2h</div>
+            <div class="cc-trust-item"><i class="fas fa-shield-halved" aria-hidden="true"></i> Paiement en magasin</div>
+          </div>
+        </section>
+      </aside>
+
+    </div>
+  </div>
+
+  {# ==============================
+     STEP 2 — CRENEAUX (Aujourd’hui + 2 jours max)
+     ============================== #}
+  <div class="cc-step-panel" id="panel2" data-click-collect-target="panel">
+    <div class="cc-layout">
+
+      {# LEFT #}
+      <div class="cc-left">
+        <section class="cc-card">
+          <header class="cc-card-header">
+            <h2 class="cc-card-title">
+              <i class="fas fa-calendar-days" aria-hidden="true"></i>
+              Choisissez votre créneau
+            </h2>
+          </header>
+
+          <div class="cc-card-body">
+            <p class="cc-help">
+              <i class="fas fa-info-circle" aria-hidden="true"></i>
+              Sélectionnez le jour et l'heure de retrait qui vous convient.
+            </p>
+
+            {# Jours + slots #}
+            {% set dayMap = {
+              1:'Lundi', 2:'Mardi', 3:'Mercredi', 4:'Jeudi', 5:'Vendredi', 6:'Samedi', 7:'Dimanche'
+            } %}
+            {% set slots = ['9h00 – 10h00', '10h00 – 11h00', '11h00 – 12h00', '14h00 – 15h00', '15h00 – 16h00', '16h00 – 17h00', '17h00 – 18h00'] %}
+
+            {# i=0 => aujourd'hui, i=1 => demain, i=2 => après-demain #}
+            {% for i in 0..2 %}
+              {% set dt = ('now'|date_modify('+' ~ i ~ ' day')) %}
+              {% set n = dt|date('N') %}
+              {% set dayLabel = dayMap[n] %}
+              {% set dateIso = dt|date('Y-m-d') %}
+              {% set dateHuman = dt|date('d/m') %}
+
+              <div class="cc-day-group">
+                <div class="cc-day-group-label">
+                  <i class="fas fa-calendar-day" aria-hidden="true"></i>
+                  {{ i == 0 ? "Aujourd’hui" : dayLabel }}
+                  <span class="cc-day-group-sub">
+                    ({{ dateHuman }})
+                  </span>
+                </div>
+
+                <div class="cc-slots-grid">
+                  {% for slot in slots %}
+                    {# Valeur propre pour back + front : YYYY-MM-DD|slotText #}
+                    {% set slotValue = dateIso ~ '|' ~ slot %}
+
+                    <label class="cc-slot-card"
+                           data-action="click->click-collect#selectSlot"
+                           data-slot-value="{{ slotValue }}">
+                      <input type="radio" name="slot" value="{{ slotValue }}">
+                      <span class="cc-slot-check"><i class="fas fa-check" aria-hidden="true"></i></span>
+
+                      <div class="cc-slot-day">
+                        {{ i == 0 ? "Aujourd’hui" : dayLabel }}
+                      </div>
+                      <div class="cc-slot-time">{{ slot }}</div>
+                    </label>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </section>
+      </div>
+
+      {# RIGHT #}
+      <aside class="cc-right">
+        <section class="cc-summary">
+          <header class="cc-summary-header">
+            <h2 class="cc-summary-title">
+              <i class="fas fa-receipt" aria-hidden="true"></i>
+              Récapitulatif
+            </h2>
+          </header>
+
+          <div class="cc-summary-body">
+            <div data-click-collect-target="summaryLines2"></div>
+
+            <div class="cc-summary-total">
+              <span class="cc-summary-total-label">Total</span>
+              <span class="cc-summary-total-amount" data-click-collect-target="summaryTotal2">0,00 €</span>
+            </div>
+
+            <div class="cc-selected-slot"
+                 data-click-collect-target="selectedSlotDisplay"
+                 style="display:none;">
+              <span class="cc-selected-slot-label">
+                <i class="fas fa-clock" aria-hidden="true"></i>
+                Créneau
+              </span>
+              <span class="cc-selected-slot-value" data-click-collect-target="selectedSlotText"></span>
+            </div>
+
+            <button class="cc-btn-next"
+                    type="button"
+                    data-click-collect-target="btnToStep3"
+                    data-step="3"
+                    data-action="click->click-collect#goToStep"
+                    disabled>
+              Mes coordonnées
+              <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            </button>
+
+            <button class="cc-btn-prev"
+                    type="button"
+                    data-step="1"
+                    data-action="click->click-collect#goToStep">
+              <i class="fas fa-arrow-left" aria-hidden="true"></i>
+              Retour au panier
+            </button>
+          </div>
+
+          <div class="cc-trust">
+            <div class="cc-trust-item"><i class="fas fa-store" aria-hidden="true"></i> Retrait : Strasbourg</div>
+            <div class="cc-trust-item"><i class="fas fa-calendar-check" aria-hidden="true"></i> Commande prête à l'heure</div>
+          </div>
+        </section>
+      </aside>
+
+    </div>
+  </div>
+
+  {# ==============================
+     STEP 3 — COORDONNÉES
+     ============================== #}
+  <div class="cc-step-panel" id="panel3" data-click-collect-target="panel">
+    <div class="cc-layout">
+
+      {# LEFT #}
+      <div class="cc-left">
+        <section class="cc-card">
+          <header class="cc-card-header">
+            <h2 class="cc-card-title">
+              <i class="fas fa-user-circle" aria-hidden="true"></i>
+              Vos coordonnées
+            </h2>
+          </header>
+
+          <div class="cc-card-body">
+            <p class="cc-help">
+              Aucun compte requis. Ces informations servent uniquement à préparer et identifier votre commande.
+            </p>
+
+            <form class="cc-form" data-click-collect-target="customerForm" novalidate>
+              <div class="cc-form-grid">
+
+                <div class="cc-field">
+                  <label class="cc-label" for="firstName">Prénom <span class="cc-required">*</span></label>
+                  <input class="cc-input" type="text" id="firstName" name="firstName"
+                         placeholder="Jean" autocomplete="given-name"
+                         data-click-collect-target="firstName" required>
+                  <div class="cc-error" data-click-collect-target="errFirstName">Prénom requis.</div>
+                </div>
+
+                <div class="cc-field">
+                  <label class="cc-label" for="lastName">Nom <span class="cc-required">*</span></label>
+                  <input class="cc-input" type="text" id="lastName" name="lastName"
+                         placeholder="Dupont" autocomplete="family-name"
+                         data-click-collect-target="lastName" required>
+                  <div class="cc-error" data-click-collect-target="errLastName">Nom requis.</div>
+                </div>
+
+                <div class="cc-field">
+                  <label class="cc-label" for="phone">Téléphone <span class="cc-optional">(optionnel)</span></label>
+<input class="cc-input" type="tel" id="phone" name="phone"
+       placeholder="06 12 34 56 78" autocomplete="tel"
+       data-click-collect-target="phone">
+       <div class="cc-error" data-click-collect-target="errPhone">Téléphone invalide.</div>
+                </div>
+
+
+                <div class="cc-field">
+                  <label class="cc-label" for="email">Email <span class="cc-required">*</span></label>
+<input class="cc-input" type="email" id="email" name="email"
+       placeholder="jean@email.com" autocomplete="email"
+       data-click-collect-target="email" required>
+<div class="cc-error" data-click-collect-target="errEmail">Email valide requis.</div>
+                </div>
+
+                <div class="cc-field cc-field-full">
+                  <label class="cc-label" for="notes">Remarques <span class="cc-optional">(optionnel)</span></label>
+                  <textarea class="cc-textarea" id="notes" name="notes"
+                            placeholder="Allergies, substitutions, instructions particulières…"
+                            data-click-collect-target="notes"></textarea>
+                </div>
+
+              </div>
+            </form>
+          </div>
+        </section>
+      </div>
+
+      {# RIGHT #}
+      <aside class="cc-right">
+        <section class="cc-summary">
+          <header class="cc-summary-header">
+            <h2 class="cc-summary-title">
+              <i class="fas fa-receipt" aria-hidden="true"></i>
+              Récapitulatif
+            </h2>
+          </header>
+
+          <div class="cc-summary-body">
+            <div data-click-collect-target="summaryLines3"></div>
+
+            <div class="cc-summary-total">
+              <span class="cc-summary-total-label">Total</span>
+              <span class="cc-summary-total-amount" data-click-collect-target="summaryTotal3">0,00 €</span>
+            </div>
+
+            <div class="cc-selected-slot is-always"
+                 aria-live="polite">
+              <span class="cc-selected-slot-label">
+                <i class="fas fa-clock" aria-hidden="true"></i>
+                Créneau
+              </span>
+              <span class="cc-selected-slot-value" data-click-collect-target="slotDisplay3"></span>
+            </div>
+
+            <button class="cc-btn-next"
+                    type="button"
+                    data-action="click->click-collect#validateStep3">
+              Voir le récap
+              <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            </button>
+
+            <button class="cc-btn-prev"
+                    type="button"
+                    data-step="2"
+                    data-action="click->click-collect#goToStep">
+              <i class="fas fa-arrow-left" aria-hidden="true"></i>
+              Retour aux créneaux
+            </button>
+          </div>
+        </section>
+      </aside>
+
+    </div>
+  </div>
+
+  {# ==============================
+     STEP 4 — RECAPITULATIF
+     ============================== #}
+  <div class="cc-step-panel" id="panel4" data-click-collect-target="panel">
+    <div class="cc-layout">
+
+      {# LEFT #}
+      <div class="cc-left">
+        <section class="cc-card" data-click-collect-target="recapCard">
+          {# rempli par Stimulus #}
+        </section>
+      </div>
+
+      {# RIGHT #}
+      <aside class="cc-right">
+        <section class="cc-summary">
+          <header class="cc-summary-header">
+            <h2 class="cc-summary-title">
+              <i class="fas fa-receipt" aria-hidden="true"></i>
+              Récapitulatif final
+            </h2>
+          </header>
+
+          <div class="cc-summary-body">
+            <div data-click-collect-target="summaryLines4"></div>
+
+            <div class="cc-summary-total">
+              <span class="cc-summary-total-label">Total à payer</span>
+              <span class="cc-summary-total-amount" data-click-collect-target="summaryTotal4">0,00 €</span>
+            </div>
+
+            <p class="cc-note">
+              <i class="fas fa-info-circle" aria-hidden="true"></i>
+              Le paiement s'effectue en magasin lors du retrait.
+            </p>
+
+            <button class="cc-btn-confirm"
+                    type="button"
+                    data-action="click->click-collect#confirmOrder">
+              <i class="fas fa-circle-check" aria-hidden="true"></i>
+              Confirmer ma commande
+            </button>
+
+            <button class="cc-btn-prev"
+                    type="button"
+                    data-step="3"
+                    data-action="click->click-collect#goToStep">
+              <i class="fas fa-arrow-left" aria-hidden="true"></i>
+              Modifier mes infos
+            </button>
+          </div>
+        </section>
+      </aside>
+
+    </div>
+  </div>
+
+  {# ==============================
+     CONFIRMATION SCREEN
+     ============================== #}
+  <div class="cc-confirmation" data-click-collect-target="confirmationScreen" >
+    <div class="cc-confirmation-icon">🎉</div>
+    <h2 class="cc-confirmation-title">Commande confirmée !</h2>
+    <p class="cc-confirmation-text">Merci pour votre commande. Votre panier sera prêt à l'heure choisie.</p>
+
+    <div class="cc-confirmation-ref">
+      <div class="cc-confirmation-ref-label">Référence de commande</div>
+      <div class="cc-confirmation-ref-value" data-click-collect-target="orderRef"></div>
+    </div>
+
+    <p class="cc-confirmation-details" data-click-collect-target="confirmDetails"></p>
+
+    <a class="cc-btn-primary" href="{{ path('catalogue') }}">
+      <i class="fas fa-store" aria-hidden="true"></i>
+      Retour au catalogue
+    </a>
+  </div>
+
+</section>
+
+{% endblock %}

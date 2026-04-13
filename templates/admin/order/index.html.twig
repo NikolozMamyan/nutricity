@@ -1,0 +1,318 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Commandes{% endblock %}
+
+{% block body %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+ 
+
+  /* ── Page header ─────────────────────────── */
+  .idx-header {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px; margin-bottom: 24px;
+  }
+  .idx-title { font-size: 24px; font-weight: 800; color: var(--nutri-dark); }
+  .idx-sub   { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+  .btn-new {
+    display:inline-flex; align-items:center; gap:7px;
+    padding: 10px 18px; border-radius: 10px;
+    background: var(--nutri-green); color: #fff;
+    font-size: 13px; font-weight: 700; text-decoration:none;
+    border: none; box-shadow: 0 4px 12px rgba(45,106,79,.25);
+    transition: all .15s; font-family: 'DM Sans', sans-serif;
+  }
+  .btn-new:hover { background: var(--nutri-dark); transform: translateY(-1px); }
+
+  /* ── Filter tabs ─────────────────────────── */
+  .filter-bar {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    background: rgba(255,255,255,0.75);
+    border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 8px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  .ftab {
+    display:inline-flex; align-items:center; gap:6px;
+    padding: 7px 14px; border-radius: 9px;
+    font-size: 13px; font-weight: 600; text-decoration:none;
+    color: var(--text-muted); transition: all .15s;
+    border: 1.5px solid transparent;
+  }
+  .ftab:hover { background: var(--nutri-green-pale); color: var(--nutri-green); }
+  .ftab.active {
+    background: var(--nutri-green); color: #fff;
+    border-color: transparent;
+    box-shadow: 0 3px 10px rgba(45,106,79,.25);
+  }
+  .ftab .count {
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width: 20px; height: 18px; border-radius: 20px; padding: 0 5px;
+    font-size: 11px; font-weight: 700;
+    background: rgba(255,255,255,.25);
+  }
+  .ftab:not(.active) .count {
+    background: rgba(0,0,0,.06); color: var(--text-muted);
+  }
+
+  /* ── Stats row ───────────────────────────── */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    background: rgba(255,255,255,0.8); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 14px 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  .stat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); }
+  .stat-val   { font-size: 26px; font-weight: 800; color: var(--nutri-dark); margin-top: 4px; letter-spacing: -.02em; }
+  .stat-val small { font-size: .45em; font-weight: 500; color: var(--text-muted); }
+
+  /* ── Table card ──────────────────────────── */
+  .table-card {
+    background: rgba(255,255,255,0.8); border: 1.5px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .orders-table { width:100%; border-collapse:collapse; }
+  .orders-table thead th {
+    padding: 11px 14px;
+    background: var(--nutri-green-pale);
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--nutri-green); text-align:left; white-space:nowrap;
+  }
+  .orders-table tbody td {
+    padding: 13px 14px; border-bottom: 1px solid rgba(0,0,0,.045);
+    font-size: 14px; vertical-align: middle;
+  }
+  .orders-table tbody tr:last-child td { border-bottom: none; }
+  .orders-table tbody tr { transition: background .12s; }
+  .orders-table tbody tr:hover td { background: rgba(216,243,220,.2); }
+
+  .order-num-cell {
+    font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 600;
+    color: var(--nutri-green); letter-spacing: .03em;
+  }
+  .client-name { font-weight: 600; color: var(--nutri-dark); }
+  .client-email { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+  .total-cell { font-weight: 700; color: var(--nutri-dark); }
+  .date-cell { font-size: 13px; color: var(--text-muted); white-space: nowrap; }
+
+  /* Status badges */
+  .sbadge {
+    display:inline-flex; align-items:center; gap:5px;
+    padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    border: 1.5px solid transparent; white-space: nowrap;
+  }
+  .sbadge-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .sbadge.pending    { background: rgba(245,158,11,.1);  border-color: rgba(245,158,11,.3);  color: #92400e; }
+  .sbadge.pending    .sbadge-dot { background: #f59e0b; }
+  .sbadge.validated  { background: rgba(16,185,129,.1);  border-color: rgba(16,185,129,.3);  color: #065f46; }
+  .sbadge.validated  .sbadge-dot { background: #10b981; }
+  .sbadge.processing { background: rgba(99,102,241,.1);  border-color: rgba(99,102,241,.3);  color: #3730a3; }
+  .sbadge.processing .sbadge-dot { background: #6366f1; }
+  .sbadge.ready      { background: rgba(59,130,246,.1);  border-color: rgba(59,130,246,.3);  color: #1e40af; }
+  .sbadge.ready      .sbadge-dot { background: #3b82f6; }
+  .sbadge.collected  { background: rgba(45,106,79,.1);   border-color: rgba(45,106,79,.3);   color: var(--nutri-dark); }
+  .sbadge.collected  .sbadge-dot { background: var(--nutri-green); }
+  .sbadge.cancelled  { background: rgba(239,68,68,.1);   border-color: rgba(239,68,68,.3);   color: #991b1b; }
+  .sbadge.cancelled  .sbadge-dot { background: #ef4444; }
+
+  /* Action btns */
+  .actions-cell { display:flex; gap:6px; align-items:center; }
+  .btn-open {
+    display:inline-flex; align-items:center; gap:5px;
+    padding: 6px 12px; border-radius: 8px;
+    border: 1.5px solid var(--border); background: #fff;
+    font-size: 12px; font-weight: 600; text-decoration:none;
+    color: var(--nutri-dark); transition: all .15s;
+  }
+  .btn-open:hover { background: var(--nutri-green-pale); border-color: var(--nutri-green-light); }
+  .btn-del {
+    display:inline-flex; align-items:center; gap:5px;
+    padding: 6px 10px; border-radius: 8px;
+    border: 1.5px solid rgba(188,108,37,.25); background: rgba(188,108,37,.07);
+    font-size: 12px; font-weight: 600; color: var(--warm-brown);
+    cursor:pointer; transition: all .15s; font-family: 'DM Sans', sans-serif;
+  }
+  .btn-del:hover { background: var(--warm-brown); color:#fff; border-color:var(--warm-brown); }
+
+  /* Empty state */
+  .empty-state {
+    text-align:center; padding: 56px 20px;
+    color: var(--text-muted);
+  }
+  .empty-icon { font-size: 40px; margin-bottom: 10px; }
+  .empty-text { font-size: 15px; font-weight: 600; color: var(--nutri-dark); }
+  .empty-sub  { font-size: 13px; margin-top: 4px; }
+
+  /* Toast */
+  .del-toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--nutri-dark); color: #fff;
+    padding: 12px 18px; border-radius: 10px; font-size: 13px; font-weight: 500;
+    transform: translateY(60px); opacity: 0;
+    transition: all .3s cubic-bezier(.34,1.56,.64,1);
+    z-index: 999; pointer-events:none;
+  }
+  .del-toast.show { transform: translateY(0); opacity: 1; }
+  .del-toast.error { background: var(--warm-brown); }
+</style>
+
+<div class="del-toast" id="delToast"></div>
+
+<div class="idx-shell">
+
+  {# ── Header ──────────────────────────────── #}
+  <div class="idx-header">
+    <div>
+      <div class="idx-title">Commandes</div>
+      <div class="idx-sub">Suivi click & collect — {{ orders|length }} commande{{ orders|length != 1 ? 's' : '' }} affichée{{ orders|length != 1 ? 's' : '' }}</div>
+    </div>
+    <a href="{{ path('admin_orders_new') }}" class="btn-new">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nouvelle commande
+    </a>
+  </div>
+
+  {# ── Stats ────────────────────────────────── #}
+  {% set totalRevenue = 0 %}
+  {% set countPending = 0 %}
+  {% set countActive  = 0 %}
+  {% for o in orders %}
+    {% if o.status not in ['cancelled'] %}{% set totalRevenue = totalRevenue + o.total %}{% endif %}
+    {% if o.status == 'pending'    %}{% set countPending = countPending + 1 %}{% endif %}
+    {% if o.status in ['validated','processing','ready'] %}{% set countActive = countActive + 1 %}{% endif %}
+  {% endfor %}
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total affiché</div>
+      <div class="stat-val">{{ orders|length }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">En attente</div>
+      <div class="stat-val" style="color:#92400e;">{{ countPending }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">En cours</div>
+      <div class="stat-val" style="color:#1e40af;">{{ countActive }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">CA (hors annulées)</div>
+      <div class="stat-val">{{ totalRevenue|number_format(2,'.',' ') }}<small> €</small></div>
+    </div>
+  </div>
+
+  {# ── Filters ──────────────────────────────── #}
+  <div class="filter-bar">
+    <a href="{{ path('admin_orders_index') }}" class="ftab {{ status is empty ? 'active' : '' }}">
+      Toutes
+      <span class="count">{{ orders|length }}</span>
+    </a>
+    {% for code, label in statuses %}
+      <a href="{{ path('admin_orders_index', {status: code}) }}"
+         class="ftab {{ status == code ? 'active' : '' }}">
+        {{ label }}
+      </a>
+    {% endfor %}
+  </div>
+
+  {# ── Table ────────────────────────────────── #}
+  <div class="table-card">
+    {% if orders is empty %}
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-text">Aucune commande{% if status %} avec ce statut{% endif %}</div>
+        <div class="empty-sub">{% if status %}Essayez un autre filtre{% else %}Les commandes apparaîtront ici{% endif %}</div>
+      </div>
+    {% else %}
+    <table class="orders-table">
+      <thead>
+        <tr>
+          <th>N° commande</th>
+          <th>Client</th>
+          <th>Statut</th>
+          <th>Total</th>
+          <th>Date</th>
+          <th style="width:140px;"></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for o in orders %}
+        <tr id="row-{{ o.id }}">
+          <td><div class="order-num-cell">{{ o.orderNumber }}</div></td>
+          <td>
+            <div class="client-name">{{ o.fullName ?: '—' }}</div>
+            {% if o.email %}<div class="client-email">{{ o.email }}</div>{% endif %}
+          </td>
+          <td>
+            <span class="sbadge {{ o.status }}">
+              <span class="sbadge-dot"></span>
+              {{ o.statusLabel }}
+            </span>
+          </td>
+          <td class="total-cell">{{ o.total }} €</td>
+          <td class="date-cell">{{ o.createdAt|date('d/m/Y H:i') }}</td>
+          <td>
+            <div class="actions-cell">
+              <a href="{{ path('admin_orders_show', {id: o.id}) }}" class="btn-open">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Ouvrir
+              </a>
+              {% if o.status == 'NOUVELLE' %}
+                <button class="btn-del" type="button"
+                  onclick="deleteOrder({{ o.id }}, '{{ csrf_token('delete_order_' ~ o.id) }}', '{{ o.orderNumber }}')">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
+                </button>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </div>
+
+</div>
+
+<script>
+async function deleteOrder(id, csrf, num) {
+  if (!confirm('Supprimer la commande ' + num + ' ?\nLes articles seront restitués au stock.')) return;
+
+  const toast = document.getElementById('delToast');
+  function showToast(msg, err) {
+    toast.textContent = msg;
+    toast.className = 'del-toast' + (err ? ' error' : '');
+    void toast.offsetWidth;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  try {
+    const res = await fetch('/admin/orders/' + id + '/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify({ _token: csrf })
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'Erreur serveur');
+
+    // Supprime la ligne avec une animation
+    const row = document.getElementById('row-' + id);
+    if (row) {
+      row.style.transition = 'opacity .3s, transform .3s';
+      row.style.opacity = '0';
+      row.style.transform = 'translateX(12px)';
+      setTimeout(() => row.remove(), 300);
+    }
+    showToast('✓ Commande ' + num + ' supprimée');
+  } catch(err) {
+    showToast('⚠ ' + err.message, true);
+  }
+}
+</script>
+{% endblock %}

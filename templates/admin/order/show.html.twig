@@ -1,0 +1,502 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Commande {{ order.orderNumber }}{% endblock %}
+
+{% block body %}
+{#
+  ── Workflow ─────────────────────────────────────────────────────────
+  pending    → bannière + bouton "Valider" uniquement (articles modifiables)
+  validated  → dropdown: En préparation / Prête / Retirée / Annulée    (articles modifiables)
+  processing → dropdown: Prête / Retirée / Annulée                     (articles modifiables)
+  ready      → dropdown: Retirée / Annulée                             (articles modifiables)
+  collected  → TOUT verrouillé (terminal)
+  cancelled  → TOUT verrouillé (terminal)
+  ─────────────────────────────────────────────────────────────────────
+#}
+{% set isLocked  = order.status in ['RETIREE', 'ANNULEE'] %}
+{% set isPending = order.status == 'NOUVELLE' %}
+{% set canEdit   = order.status in ['NOUVELLE', 'VALIDEE', 'EN_PREPARATION', 'PRETE_A_RETIRER'] %}
+
+{% if order.status in ['VALIDEE', 'EN_PREPARATION', 'PRETE_A_RETIRER'] %}
+  {% set nextOptions = {
+    'VALIDEE': 'Validée',
+    'EN_PREPARATION': 'En préparation',
+    'PRETE_A_RETIRER': 'Prête à retirer',
+    'RETIREE': 'Retirée',
+    'ANNULEE': 'Annulée'
+  } %}
+
+  {# ne pas proposer le statut courant #}
+ {% set nextOptions = nextOptions|filter((label, key) => key != order.status) %}
+{% else %}
+  {% set nextOptions = {} %}
+{% endif %}
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+  .order-shell { font-family: 'DM Sans', sans-serif; max-width: 1100px; }
+
+  /* ── Header ─────────────────────────────── */
+  .order-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    flex-wrap: wrap; gap: 16px; margin-bottom: 24px;
+  }
+  .order-num {
+    font-size: 13px; font-weight: 600; font-family: 'DM Mono', monospace;
+    color: var(--nutri-green); letter-spacing: .04em; margin-bottom: 4px;
+  }
+  .order-title { font-size: 26px; font-weight: 700; line-height: 1.2; color: var(--nutri-dark); }
+  .order-meta  { font-size: 13px; color: var(--text-muted); margin-top: 6px; display:flex; gap:14px; flex-wrap:wrap; }
+  .order-meta span { display:flex; align-items:center; gap:5px; }
+
+  /* ── Status widget ───────────────────────── */
+  .status-widget {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(255,255,255,0.9); border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 10px 16px; box-shadow: var(--shadow-sm);
+  }
+  .status-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; transition: background-color .3s;
+  }
+
+
+  .status-label-text { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing:.07em; color: var(--text-muted); }
+  .status-text { font-size: 14px; font-weight: 700; color: var(--nutri-dark); }
+
+  .status-select {
+    border: none; background: none; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 700; color: var(--nutri-dark);
+    cursor: pointer; outline: none; padding: 2px 24px 2px 4px;
+    border-radius: 6px; -webkit-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 4px center;
+    transition: background-color .15s;
+  }
+  .status-select:hover { background-color: var(--nutri-green-pale); }
+
+  .status-locked-badge {
+    display:inline-flex; align-items:center; gap:5px; font-size: 12px; color: var(--text-muted);
+    background: rgba(0,0,0,.04); border: 1px solid rgba(0,0,0,.07); padding: 4px 10px; border-radius: 20px;
+  }
+
+  /* Bouton valider */
+  .btn-validate {
+    display:inline-flex; align-items:center; gap:8px; padding: 10px 20px; border-radius: 10px;
+    background: var(--nutri-green); color: #fff; font-size: 14px; font-weight: 700;
+    border: none; cursor: pointer; text-decoration:none; font-family: 'DM Sans', sans-serif;
+    box-shadow: 0 4px 12px rgba(45,106,79,.3); transition: all .15s;
+  }
+  .btn-validate:hover { background: var(--nutri-dark); transform: translateY(-1px); }
+  .btn-validate:disabled { opacity: .7; cursor: not-allowed; transform: none; }
+
+  .status-saving { font-size: 12px; color: var(--text-muted); display:none; align-items:center; gap:5px; }
+  .status-saving.show { display:flex; }
+  .spin { animation: spin .6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .status-dot.NOUVELLE { background:#f59e0b; box-shadow:0 0 0 3px rgba(245,158,11,.2); }
+.status-dot.VALIDEE { background:#10b981; box-shadow:0 0 0 3px rgba(16,185,129,.2); }
+.status-dot.EN_PREPARATION { background:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,.2); }
+.status-dot.PRETE_A_RETIRER { background:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.2); }
+.status-dot.RETIREE { background:var(--nutri-green); box-shadow:0 0 0 3px rgba(45,106,79,.2); }
+.status-dot.ANNULEE { background:#ef4444; box-shadow:0 0 0 3px rgba(239,68,68,.2); }
+
+  /* Toast */
+  .status-toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--nutri-dark); color: #fff;
+    padding: 12px 18px; border-radius: 10px; font-size: 13px; font-weight: 500;
+    transform: translateY(60px); opacity: 0;
+    transition: all .3s cubic-bezier(.34,1.56,.64,1);
+    z-index: 999; display: flex; align-items: center; gap:8px; pointer-events: none;
+  }
+  .status-toast.show { transform: translateY(0); opacity: 1; }
+  .status-toast.error { background: var(--warm-brown); }
+
+  /* ── Pending banner ──────────────────────── */
+  .pending-banner {
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+    background: rgba(245,158,11,.08); border: 1.5px solid rgba(245,158,11,.28);
+    border-radius: 14px; padding: 16px 20px; margin-bottom: 20px;
+  }
+  .pending-banner-text { font-size: 14px; font-weight: 600; color: #92400e; }
+  .pending-banner-sub  { font-size: 12px; color: #b45309; margin-top: 3px; }
+
+  /* ── Grid ────────────────────────────────── */
+  .order-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .order-grid .span2 { grid-column: 1 / -1; }
+
+  /* ── Cards ───────────────────────────────── */
+  .ocard {
+    background: rgba(255,255,255,0.8); border: 1.5px solid var(--border);
+    border-radius: 16px; padding: 20px;
+    box-shadow: var(--shadow-sm); transition: box-shadow .2s;
+  }
+  .ocard:hover { box-shadow: var(--shadow-md); }
+  .ocard-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--text-muted); margin-bottom: 14px;
+  }
+
+  .info-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,.045); font-size: 14px;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-key { color: var(--text-muted); }
+  .info-val { font-weight: 600; color: var(--nutri-dark); text-align:right; }
+
+  .total-big { text-align: center; padding: 18px 0 14px; border-top: 1.5px dashed rgba(0,0,0,.08); margin-top: 8px; }
+  .total-big .amt { font-size: 36px; font-weight: 800; color: var(--nutri-dark); letter-spacing: -.02em; }
+  .total-big .lbl { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  .contact-btns { display:flex; gap:8px; margin-top: 14px; }
+  .cbtn {
+    flex:1; text-align:center; padding: 9px; border-radius: 10px; border: 1.5px solid var(--border);
+    font-size: 13px; font-weight: 600; text-decoration: none; color: var(--nutri-dark); background: #fff;
+    transition: all .15s; display:flex; align-items:center; justify-content:center; gap:6px;
+  }
+  .cbtn:hover { background: var(--nutri-green-pale); border-color: var(--nutri-green-light); }
+
+  /* Table */
+  .items-table { width:100%; border-collapse:collapse; }
+  .items-table thead th {
+    padding: 10px 12px; background: var(--nutri-green-pale);
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--nutri-green); text-align:left;
+  }
+  .items-table thead th:first-child { border-radius: 10px 0 0 10px; }
+  .items-table thead th:last-child  { border-radius: 0 10px 10px 0; }
+  .items-table tbody td { padding: 12px; border-bottom: 1px solid rgba(0,0,0,.05); font-size: 14px; vertical-align: middle; }
+  .items-table tbody tr:last-child td { border-bottom: none; }
+  .items-table tbody tr:hover td { background: rgba(216,243,220,.25); }
+  .product-name { font-weight: 600; color: var(--nutri-dark); }
+  .product-meta { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; margin-top: 2px; }
+  .qty-badge {
+    display:inline-flex; align-items:center; justify-content:center;
+    width: 28px; height: 28px; border-radius: 8px;
+    background: var(--nutri-green-pale); color: var(--nutri-dark); font-weight: 700; font-size: 13px;
+  }
+  .del-btn {
+    display:inline-flex; align-items:center; gap:5px; padding: 6px 12px; border-radius: 8px;
+    border: 1.5px solid rgba(188,108,37,.25); background: rgba(188,108,37,.07); color: var(--warm-brown);
+    font-size: 12px; font-weight: 600; cursor:pointer; transition: all .15s; font-family: 'DM Sans', sans-serif;
+  }
+  .del-btn:hover { background: var(--warm-brown); color:#fff; border-color:var(--warm-brown); }
+
+  .table-footer {
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top: 16px; padding-top: 14px; border-top: 1.5px solid rgba(0,0,0,.06);
+  }
+  .add-btn {
+    display:inline-flex; align-items:center; gap:6px; padding: 9px 16px; border-radius: 10px;
+    border: 1.5px solid rgba(82,183,136,.3); background: rgba(82,183,136,.1); color: var(--nutri-green);
+    font-size: 13px; font-weight: 700; text-decoration:none; transition: all .15s;
+  }
+  .add-btn:hover { background: var(--nutri-green); color:#fff; }
+  .total-line { font-size: 16px; font-weight: 700; color: var(--nutri-dark); }
+  .locked-note {
+    display:inline-flex; align-items:center; gap:6px; font-size: 12px; color: var(--warm-brown);
+    background: rgba(188,108,37,.08); border: 1px solid rgba(188,108,37,.2); padding: 6px 12px; border-radius: 8px;
+  }
+
+  .comment-box {
+    background: rgba(254,250,224,.6); border: 1.5px solid rgba(221,161,94,.25);
+    border-radius: 12px; padding: 14px 16px; font-size: 14px; color: var(--nutri-dark); line-height: 1.6; min-height: 56px;
+  }
+  .comment-empty { color: var(--text-muted); font-style:italic; }
+
+  .back-link {
+    display:inline-flex; align-items:center; gap:6px; font-size: 13px; font-weight: 600;
+    color: var(--text-muted); text-decoration:none; margin-bottom: 18px; transition: color .15s;
+  }
+  .back-link:hover { color: var(--nutri-green); }
+</style>
+
+<div class="status-toast" id="statusToast"></div>
+
+<div class="order-shell">
+
+  <a href="{{ path('admin_orders_index') }}" class="back-link">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Toutes les commandes
+  </a>
+
+  {# ── Header ──────────────────────────────── #}
+  <div class="order-header">
+    <div>
+      <div class="order-num">{{ order.orderNumber }}</div>
+      <div class="order-title">Commande client</div>
+      <div class="order-meta">
+        <span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          {{ order.createdAt|date('d/m/Y à H:i') }}
+        </span>
+        {% if order.slot %}
+        <span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          {{ order.slot }}
+        </span>
+        {% endif %}
+        {% if order.email %}
+        <span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          {{ order.email }}
+        </span>
+        {% endif %}
+      </div>
+    </div>
+
+    {# Status widget #}
+    <div class="status-widget">
+      <div class="status-dot {{ order.status }}" id="statusDot"></div>
+      <div>
+        <div class="status-label-text">Statut</div>
+
+        {% if isPending %}
+          {# Pending : juste le texte, le bouton valider est dans la bannière #}
+          <div class="status-text">Nouvelle commande</div>
+
+        {% elseif isLocked %}
+          {# Terminal : texte figé #}
+          <div class="status-text">{{ order.statusLabel }}</div>
+
+        {% else %}
+          {# Dropdown AJAX pour validated / processing / ready #}
+          <select class="status-select" id="statusSelect"
+            data-order-id="{{ order.id }}"
+            data-csrf="{{ csrf_token('order_status_ajax') }}">
+            <option value="{{ order.status }}" selected disabled>{{ order.statusLabel }}</option>
+            {% for value, label in nextOptions %}
+              <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        {% endif %}
+      </div>
+
+      {% if not isPending and not isLocked %}
+        <div class="status-saving" id="statusSaving">
+          <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-opacity=".2"/><path d="M21 12a9 9 0 00-9-9"/>
+          </svg>
+        </div>
+      {% endif %}
+
+      {% if isLocked %}
+        <span class="status-locked-badge">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          Verrouillée
+        </span>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Bannière Nouvelle commande ── #}
+  {% if isPending %}
+  <div class="pending-banner">
+    <div>
+      <div class="pending-banner-text">⏳ Nouvelle commande en attente</div>
+      <div class="pending-banner-sub">Vérifiez les articles ci-dessous, puis validez pour démarrer la préparation.</div>
+    </div>
+    <button type="button" class="btn-validate" id="btnValidate"
+      data-order-id="{{ order.id }}"
+      data-csrf="{{ csrf_token('order_status_ajax') }}">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      Valider la commande
+    </button>
+  </div>
+  {% endif %}
+
+  {# ── Grid ─────────────────────────────────── #}
+  <div class="order-grid">
+
+    {# Client #}
+    <div class="ocard">
+      <div class="ocard-title">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px;"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Client
+      </div>
+      <div class="info-row"><span class="info-key">Nom</span><span class="info-val">{{ order.fullName ?: '—' }}</span></div>
+      <div class="info-row"><span class="info-key">Email</span><span class="info-val">{{ order.email ?: '—' }}</span></div>
+      <div class="info-row"><span class="info-key">Téléphone</span><span class="info-val">{{ order.phone ?: '—' }}</span></div>
+      {% if order.email or order.phone %}
+      <div class="contact-btns">
+        {% if order.email %}
+          <a href="mailto:{{ order.email }}" class="cbtn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Email
+          </a>
+        {% endif %}
+        {% if order.phone %}
+          <a href="tel:{{ order.phone }}" class="cbtn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.17 1.19 2 2 0 012.17 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.91 7.09A16 16 0 0016.9 17.09l.52-.52a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+            Appeler
+          </a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+    {# Résumé #}
+    <div class="ocard">
+      <div class="ocard-title">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px;"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 000 4h6a2 2 0 000-4M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Résumé
+      </div>
+      <div class="info-row"><span class="info-key">Nb articles</span><span class="info-val">{{ order.items|length }}</span></div>
+      {% if order.slot %}
+      <div class="info-row"><span class="info-key">Créneau retrait</span><span class="info-val">{{ order.slot }}</span></div>
+      {% endif %}
+      <div class="total-big">
+        <div class="amt">{{ order.total }} <span style="font-size:.5em;font-weight:500;color:var(--text-muted);">€</span></div>
+        <div class="lbl">Total commande</div>
+      </div>
+    </div>
+
+    {# Articles #}
+    <div class="ocard span2">
+      <div class="ocard-title">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px;"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        Articles commandés
+      </div>
+
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th>Produit</th><th>Qté</th><th>Prix unit.</th><th>Sous-total</th>
+            <th style="width:120px;"></th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for it in order.items %}
+          <tr>
+            <td>
+              <div class="product-name">{{ it.productName }}</div>
+              <div class="product-meta">{% if it.product %}#{{ it.product.id }} · {{ it.product.slug }}{% else %}snapshot{% endif %}</div>
+            </td>
+            <td><span class="qty-badge">{{ it.quantity }}</span></td>
+            <td>{{ it.unitPrice }} €</td>
+            <td style="font-weight:700;">{{ it.subtotal|number_format(2,'.',' ') }} €</td>
+            <td>
+              {% if canEdit %}
+                <form method="post" action="{{ path('admin_orders_delete_item', {orderId: order.id, itemId: it.id}) }}"
+                  onsubmit="return confirm('Supprimer cet article ? Le stock sera restitué.')">
+                  <input type="hidden" name="_token" value="{{ csrf_token('del_order_item_' ~ it.id) }}">
+                  <button class="del-btn" type="submit">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                    Suppr.
+                  </button>
+                </form>
+              {% else %}
+                <span style="color:var(--text-muted);font-size:12px;">—</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5" style="text-align:center;padding:28px;color:var(--text-muted);font-style:italic;">Aucun article.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="table-footer">
+        {% if canEdit %}
+          <a href="{{ path('admin_orders_add_item', {id: order.id}) }}" class="add-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Ajouter un article
+          </a>
+        {% else %}
+          <span class="locked-note">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            Commande verrouillée — aucune modification possible
+          </span>
+        {% endif %}
+        <div class="total-line">Total : {{ order.total }} €</div>
+      </div>
+    </div>
+
+    {# Commentaire #}
+    <div class="ocard span2">
+      <div class="ocard-title">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px;"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        Commentaire client
+      </div>
+      <div class="comment-box {% if not order.comment %}comment-empty{% endif %}">
+        {{ order.comment ?: 'Aucun commentaire.' }}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  const dot    = document.getElementById('statusDot');
+  const saving = document.getElementById('statusSaving');
+  const toast  = document.getElementById('statusToast');
+  const DOT_CLASSES = ['NOUVELLE','VALIDEE','EN_PREPARATION','PRETE_A_RETIRER','RETIREE','ANNULEE'];
+
+  function showToast(msg, isError) {
+    toast.textContent = msg;
+    toast.className = 'status-toast' + (isError ? ' error' : '');
+    void toast.offsetWidth;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3200);
+  }
+
+  async function postStatus(orderId, newStatus, csrf) {
+    const res = await fetch('/admin/orders/' + orderId + '/status/ajax', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify({ status: newStatus, _token: csrf })
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'Erreur serveur');
+    return data;
+  }
+
+  function setDot(status) {
+    DOT_CLASSES.forEach(c => dot.classList.remove(c));
+    dot.classList.add(status);
+  }
+
+  /* ── Dropdown AJAX (validated / processing / ready) ── */
+  const sel = document.getElementById('statusSelect');
+  if (sel) {
+    sel.addEventListener('change', async function () {
+      const newStatus = sel.value;
+      saving && saving.classList.add('show');
+      sel.disabled = true;
+      try {
+        await postStatus(sel.dataset.orderId, newStatus, sel.dataset.csrf);
+        setDot(newStatus);
+        showToast('✓ Statut mis à jour');
+        setTimeout(() => location.reload(), 800);
+      } catch (err) {
+        showToast('⚠ ' + err.message, true);
+        setTimeout(() => location.reload(), 1800);
+      } finally {
+        saving && saving.classList.remove('show');
+      }
+    });
+  }
+
+  /* ── Bouton Valider (pending uniquement) ── */
+  const btnValidate = document.getElementById('btnValidate');
+  if (btnValidate) {
+    btnValidate.addEventListener('click', async function () {
+      btnValidate.disabled = true;
+      btnValidate.innerHTML = '<svg class="spin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-opacity=".2"/><path d="M21 12a9 9 0 00-9-9"/></svg> Validation…';
+      try {
+        await postStatus(btnValidate.dataset.orderId, 'VALIDEE', btnValidate.dataset.csrf);
+        showToast('✓ Commande validée');
+        setTimeout(() => location.reload(), 800);
+      } catch (err) {
+        showToast('⚠ ' + err.message, true);
+        btnValidate.disabled = false;
+        btnValidate.innerHTML = '✓ Valider la commande';
+      }
+    });
+  }
+
+})();
+</script>
+{% endblock %}

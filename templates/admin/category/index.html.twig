@@ -1,0 +1,47 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Catégories{% endblock %}
+
+{% block body %}
+  <div class="hstack" style="justify-content:space-between; margin-bottom:12px;">
+    <div>
+      <h1>Catégories</h1>
+      <div class="muted">Gestion des catégories produits.</div>
+    </div>
+    <a class="btn btn-primary" href="{{ path('admin_categories_new') }}">Ajouter</a>
+  </div>
+
+  <div class="card" style="margin-bottom:12px;">
+    <form method="get" class="hstack">
+      <input name="q" value="{{ q }}" placeholder="Rechercher (nom/slug)..." style="max-width:360px;">
+      <button class="btn">Rechercher</button>
+      <a class="btn" href="{{ path('admin_categories_index') }}">Reset</a>
+    </form>
+  </div>
+
+  <div class="card">
+    <table class="table">
+      <thead>
+        <tr><th>Nom</th><th>Slug</th><th>Description</th><th>Produits</th><th></th></tr>
+      </thead>
+      <tbody>
+      {% for c in categories %}
+        <tr>
+          <td style="font-weight:800;">{{ c.name }}</td>
+          <td class="muted">{{ c.slug }}</td>
+          <td class="muted">{{ c.description ? c.description|slice(0,80) ~ (c.description|length > 80 ? '…' : '') : '—' }}</td>
+          <td><span class="badge">{{ c.products|length }}</span></td>
+          <td class="hstack">
+            <a class="btn" href="{{ path('admin_categories_edit', {id:c.id}) }}">Éditer</a>
+            <form method="post" action="{{ path('admin_categories_delete', {id:c.id}) }}">
+              <input type="hidden" name="_token" value="{{ csrf_token('del_category_' ~ c.id) }}">
+              <button class="btn btn-danger" data-confirm="Supprimer cette catégorie ?">Supprimer</button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5" class="muted">Aucune catégorie.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

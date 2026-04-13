@@ -1,0 +1,400 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Ajouter un article — {{ order.orderNumber }}{% endblock %}
+
+{% block body %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+  .additem-shell { font-family:'DM Sans',sans-serif; max-width:680px; }
+
+  .back-link {
+    display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600;
+    color:var(--text-muted); text-decoration:none; margin-bottom:20px; transition:color .15s;
+  }
+  .back-link:hover { color:var(--nutri-green); }
+
+  .page-title { font-size:22px; font-weight:800; color:var(--nutri-dark); margin-bottom:2px; }
+  .page-sub   { font-size:13px; color:var(--text-muted); margin-bottom:22px; display:flex; align-items:center; gap:10px; }
+
+  .ocard {
+    background:rgba(255,255,255,.82); border:1.5px solid var(--border);
+    border-radius:16px; padding:22px; box-shadow:var(--shadow-sm); margin-bottom:14px;
+  }
+  .ocard-title {
+    font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.08em; color:var(--text-muted); margin-bottom:16px;
+  }
+
+  /* ── Order summary strip ─────────────────── */
+  .order-strip {
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    background:var(--nutri-green-pale); border:1.5px solid rgba(82,183,136,.25);
+    border-radius:12px; padding:12px 16px; margin-bottom:20px;
+    font-size:13px;
+  }
+  .strip-num { font-family:'DM Mono',monospace; font-weight:700; color:var(--nutri-green); }
+  .strip-sep { color:rgba(0,0,0,.15); }
+  .strip-stat { font-weight:600; color:var(--nutri-dark); }
+  .strip-total { margin-left:auto; font-weight:800; color:var(--nutri-dark); font-size:15px; }
+  .strip-total span { font-size:11px; font-weight:500; color:var(--text-muted); }
+
+  /* ── Search ──────────────────────────────── */
+  .search-wrap { position:relative; margin-bottom:14px; }
+  .search-input {
+    width:100%; padding:12px 14px 12px 40px;
+    border:1.5px solid var(--border); border-radius:11px;
+    background:rgba(255,255,255,.9); font-family:'DM Sans',sans-serif;
+    font-size:14px; outline:none; transition:border-color .2s, box-shadow .2s;
+  }
+  .search-input:focus {
+    border-color:var(--nutri-green-light);
+    box-shadow:0 0 0 3px rgba(82,183,136,.1);
+  }
+  .search-icon {
+    position:absolute; left:13px; top:50%; transform:translateY(-50%);
+    pointer-events:none; color:var(--text-muted);
+  }
+  .search-spinner {
+    position:absolute; right:13px; top:50%; transform:translateY(-50%); display:none;
+  }
+  .search-spinner.show { display:block; }
+  .spin { animation:spin .6s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .search-results {
+    position:absolute; top:calc(100% + 5px); left:0; right:0; z-index:60;
+    background:#fff; border:1.5px solid var(--border);
+    border-radius:12px; box-shadow:var(--shadow-md);
+    overflow:hidden; display:none; max-height:280px; overflow-y:auto;
+  }
+  .search-results.open { display:block; }
+
+  .sr-item {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:11px 14px; cursor:pointer; transition:background .12s;
+    border-bottom:1px solid rgba(0,0,0,.04);
+  }
+  .sr-item:last-child { border-bottom:none; }
+  .sr-item:hover { background:var(--nutri-green-pale); }
+  .sr-left { flex:1; }
+  .sr-name  { font-size:14px; font-weight:600; color:var(--nutri-dark); }
+  .sr-meta  { font-size:12px; color:var(--text-muted); margin-top:2px; }
+  .sr-right { text-align:right; flex-shrink:0; margin-left:12px; }
+  .sr-price { font-size:14px; font-weight:700; color:var(--nutri-green); font-family:'DM Mono',monospace; }
+  .sr-stock { font-size:11px; margin-top:2px; }
+  .sr-stock.ok   { color:#10b981; }
+  .sr-stock.low  { color:#f59e0b; }
+  .sr-stock.none { color:#ef4444; }
+  .sr-empty { padding:18px; text-align:center; color:var(--text-muted); font-size:13px; }
+
+  /* ── Selected product card ───────────────── */
+  .prod-card {
+    display:none; background:rgba(99,102,241,.05);
+    border:1.5px solid rgba(99,102,241,.2); border-radius:12px;
+    padding:14px 16px; margin-bottom:16px;
+  }
+  .prod-card.show { display:block; }
+  .prod-card-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .pc-name  { font-size:15px; font-weight:700; color:var(--nutri-dark); }
+  .pc-price { font-size:18px; font-weight:800; color:var(--nutri-green); font-family:'DM Mono',monospace; }
+  .pc-details { display:flex; gap:16px; font-size:13px; color:var(--text-muted); }
+  .pc-detail  { display:flex; align-items:center; gap:5px; }
+
+  /* ── Qty + submit ────────────────────────── */
+  .qty-row {
+    display:flex; align-items:center; gap:12px;
+  }
+  .qty-label { font-size:13px; font-weight:600; color:var(--text-muted); white-space:nowrap; }
+  .qty-controls {
+    display:flex; align-items:center; gap:0;
+    border:1.5px solid var(--border); border-radius:10px; overflow:hidden;
+    background:#fff;
+  }
+  .qty-btn {
+    width:38px; height:42px; border:none; background:none; cursor:pointer;
+    font-size:18px; font-weight:600; color:var(--nutri-dark);
+    transition:background .12s; display:flex; align-items:center; justify-content:center;
+  }
+  .qty-btn:hover { background:var(--nutri-green-pale); }
+  .qty-num {
+    width:52px; text-align:center; border:none; outline:none;
+    font-size:15px; font-weight:700; color:var(--nutri-dark);
+    font-family:'DM Sans',sans-serif; background:none;
+    border-left:1px solid var(--border); border-right:1px solid var(--border);
+  }
+  .btn-submit {
+    flex:1; display:flex; align-items:center; justify-content:center; gap:8px;
+    padding:11px 20px; border-radius:10px;
+    background:var(--nutri-green); color:#fff;
+    font-size:14px; font-weight:700; border:none; cursor:pointer;
+    font-family:'DM Sans',sans-serif; box-shadow:0 4px 12px rgba(45,106,79,.25);
+    transition:all .15s;
+  }
+  .btn-submit:hover { background:var(--nutri-dark); }
+  .btn-submit:disabled { opacity:.5; cursor:not-allowed; }
+  .btn-back {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:11px 16px; border-radius:10px;
+    border:1.5px solid var(--border); background:#fff;
+    font-size:14px; font-weight:600; text-decoration:none;
+    color:var(--text-muted); transition:all .15s;
+  }
+  .btn-back:hover { background:var(--nutri-green-pale); }
+
+  /* ── Existing items ──────────────────────── */
+  .items-list { margin-top:16px; }
+  .items-list-title {
+    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em;
+    color:var(--text-muted); margin-bottom:10px;
+  }
+  .item-row {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:9px 12px; border-radius:9px; font-size:13px;
+    background:rgba(255,255,255,.7); border:1px solid rgba(0,0,0,.05);
+    margin-bottom:6px;
+  }
+  .item-name { font-weight:600; color:var(--nutri-dark); }
+  .item-qty  { font-size:12px; color:var(--text-muted); margin-top:1px; }
+  .item-sub  { font-weight:700; color:var(--nutri-dark); font-family:'DM Mono',monospace; font-size:13px; }
+
+  /* Toast */
+  .ai-toast {
+    position:fixed; bottom:24px; right:24px; z-index:999;
+    background:var(--nutri-dark); color:#fff;
+    padding:12px 18px; border-radius:10px; font-size:13px; font-weight:500;
+    transform:translateY(60px); opacity:0; pointer-events:none;
+    transition:all .3s cubic-bezier(.34,1.56,.64,1);
+  }
+  .ai-toast.show { transform:translateY(0); opacity:1; }
+  .ai-toast.error { background:var(--warm-brown); }
+</style>
+
+<div class="ai-toast" id="aiToast"></div>
+
+<div class="additem-shell">
+
+  <a href="{{ path('admin_orders_show', {id: order.id}) }}" class="back-link">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Retour à la commande
+  </a>
+
+  <div class="page-title">Ajouter un article</div>
+
+  {# Order strip #}
+  <div class="order-strip">
+    <span class="strip-num">{{ order.orderNumber }}</span>
+    <span class="strip-sep">·</span>
+    <span class="strip-stat">{{ order.statusLabel }}</span>
+    <span class="strip-sep">·</span>
+    <span>{{ order.items|length }} article{{ order.items|length != 1 ? 's' : '' }}</span>
+    <span class="strip-total">{{ order.total }} <span>€</span></span>
+  </div>
+
+  <div class="ocard">
+    <div class="ocard-title">Rechercher un produit</div>
+
+    <div class="search-wrap">
+      <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" class="search-input" id="prodSearch"
+        placeholder="Nom du produit, référence…" autocomplete="off">
+      <svg class="search-spinner spin" id="prodSpinner" width="15" height="15"
+        viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2.5">
+        <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-opacity=".2"/>
+        <path d="M21 12a9 9 0 00-9-9"/>
+      </svg>
+      <div class="search-results" id="prodResults"></div>
+    </div>
+
+    <div class="prod-card" id="prodCard">
+      <div class="prod-card-top">
+        <div class="pc-name" id="pcName"></div>
+        <div class="pc-price" id="pcPrice"></div>
+      </div>
+      <div class="pc-details">
+        <div class="pc-detail">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          Réf. <span id="pcSlug" style="font-family:'DM Mono',monospace;"></span>
+        </div>
+        <div class="pc-detail">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Stock : <span id="pcStock" style="font-weight:700;"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="qty-row">
+      <span class="qty-label">Quantité :</span>
+      <div class="qty-controls">
+        <button class="qty-btn" id="qtyMinus" type="button">−</button>
+        <input type="number" class="qty-num" id="prodQty" value="1" min="1">
+        <button class="qty-btn" id="qtyPlus" type="button">+</button>
+      </div>
+      <button class="btn-submit" id="btnAdd" disabled>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Ajouter à la commande
+      </button>
+      <a href="{{ path('admin_orders_show', {id: order.id}) }}" class="btn-back">Annuler</a>
+    </div>
+
+  </div>
+
+  {# Existing items #}
+  {% if order.items|length %}
+  <div class="ocard">
+    <div class="items-list-title">Articles déjà dans la commande</div>
+    <div class="items-list">
+      {% for it in order.items %}
+      <div class="item-row">
+        <div>
+          <div class="item-name">{{ it.productName }}</div>
+          <div class="item-qty">× {{ it.quantity }} · {{ it.unitPrice }} € l'unité</div>
+        </div>
+        <div class="item-sub">{{ it.subtotal|number_format(2,'.',' ') }} €</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+{# Hidden form for actual submission (keeps Symfony CSRF + redirect flow) #}
+<form id="addForm" method="post" action="{{ path('admin_orders_add_item', {id: order.id}) }}" style="display:none;">
+  {{ form_widget(form._token) }}
+  <input type="hidden" name="order_add_item[product]" id="formProductId">
+  <input type="hidden" name="order_add_item[quantity]" id="formQty">
+</form>
+
+<script>
+(function () {
+
+  const toast = document.getElementById('aiToast');
+  function showToast(msg, isError) {
+    toast.textContent = msg;
+    toast.className = 'ai-toast' + (isError ? ' error' : '');
+    void toast.offsetWidth;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  function debounce(fn, ms) {
+    let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+  }
+
+  let selectedProd = null;
+
+  const prodSearch  = document.getElementById('prodSearch');
+  const prodResults = document.getElementById('prodResults');
+  const prodSpinner = document.getElementById('prodSpinner');
+  const prodCard    = document.getElementById('prodCard');
+  const btnAdd      = document.getElementById('btnAdd');
+  const qtyInput    = document.getElementById('prodQty');
+
+  /* ── Product search ──────────────────────── */
+  const doSearch = debounce(async (q) => {
+    if (q.length < 2) { prodResults.classList.remove('open'); return; }
+    prodSpinner.classList.add('show');
+    try {
+      const res  = await fetch('/admin/orders/search/products?q=' + encodeURIComponent(q), {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+      const data = await res.json();
+      renderResults(data.results || []);
+    } catch { showToast('Erreur de recherche', true); }
+    prodSpinner.classList.remove('show');
+  }, 280);
+
+  function renderResults(items) {
+    if (!items.length) {
+      prodResults.innerHTML = '<div class="sr-empty">Aucun produit actif trouvé</div>';
+    } else {
+      prodResults.innerHTML = items.map(p => {
+        const stockClass = p.stock > 5 ? 'ok' : p.stock > 0 ? 'low' : 'none';
+        const stockLabel = p.stock > 0 ? p.stock + ' en stock' : 'Rupture';
+        return `
+        <div class="sr-item" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}" data-stock="${p.stock}" data-slug="${p.slug||''}">
+          <div class="sr-left">
+            <div class="sr-name">${p.name}</div>
+            <div class="sr-meta">${p.slug || ''}</div>
+          </div>
+          <div class="sr-right">
+            <div class="sr-price">${parseFloat(p.price).toFixed(2)} €</div>
+            <div class="sr-stock ${stockClass}">${stockLabel}</div>
+          </div>
+        </div>`;
+      }).join('');
+
+      prodResults.querySelectorAll('.sr-item').forEach(el => {
+        el.addEventListener('click', () => {
+          if (parseInt(el.dataset.stock) === 0) {
+            showToast('Ce produit est en rupture de stock', true);
+            return;
+          }
+          selectProd({
+            id:    el.dataset.id,
+            name:  el.dataset.name,
+            price: parseFloat(el.dataset.price),
+            stock: parseInt(el.dataset.stock),
+            slug:  el.dataset.slug,
+          });
+        });
+      });
+    }
+    prodResults.classList.add('open');
+  }
+
+  function selectProd(p) {
+    selectedProd = p;
+    prodSearch.value = p.name;
+    prodResults.classList.remove('open');
+
+    document.getElementById('pcName').textContent  = p.name;
+    document.getElementById('pcPrice').textContent = p.price.toFixed(2) + ' €';
+    document.getElementById('pcSlug').textContent  = p.slug || '—';
+    document.getElementById('pcStock').textContent = p.stock;
+    prodCard.classList.add('show');
+
+    qtyInput.max = p.stock;
+    if (parseInt(qtyInput.value) > p.stock) qtyInput.value = p.stock;
+    btnAdd.disabled = false;
+  }
+
+  prodSearch.addEventListener('input', e => {
+    selectedProd = null;
+    btnAdd.disabled = true;
+    prodCard.classList.remove('show');
+    doSearch(e.target.value.trim());
+  });
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.search-wrap')) prodResults.classList.remove('open');
+  });
+
+  /* ── Qty controls ────────────────────────── */
+  document.getElementById('qtyMinus').addEventListener('click', () => {
+    const v = parseInt(qtyInput.value) || 1;
+    if (v > 1) qtyInput.value = v - 1;
+  });
+  document.getElementById('qtyPlus').addEventListener('click', () => {
+    const v   = parseInt(qtyInput.value) || 1;
+    const max = selectedProd ? selectedProd.stock : 999;
+    if (v < max) qtyInput.value = v + 1;
+    else showToast('Stock maximum atteint (' + max + ')', true);
+  });
+
+  /* ── Submit → Symfony form ───────────────── */
+  btnAdd.addEventListener('click', () => {
+    if (!selectedProd) return;
+    const qty = parseInt(qtyInput.value) || 1;
+    if (qty > selectedProd.stock) {
+      showToast('⚠ Stock insuffisant (' + selectedProd.stock + ' dispo)', true);
+      return;
+    }
+    document.getElementById('formProductId').value = selectedProd.id;
+    document.getElementById('formQty').value        = qty;
+    document.getElementById('addForm').submit();
+  });
+
+})();
+</script>
+{% endblock %}

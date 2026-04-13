@@ -15,8 +15,7 @@
 
     <title>{% block title %}Welcome!{% endblock %}</title>
 
-    {% block stylesheets %}{% endblock %}
-    {% block page_styles %}{% endblock %}
+
 
     {% block javascripts %}
       {% block importmap %}{{ importmap('app') }}{% endblock %}
@@ -24,25 +23,14 @@
   </head>
 
   {# IMPORTANT: layout controller sur body (scope global) #}
-  <body data-controller="layout">
-
-    {# ===== Layout wrapper ===== #}
-    <div class="app-shell" data-layout-target="shell">
-
-      {# Sidebar + overlay + mobile header DOIVENT être ici (dans le scope du body/layout) #}
-      {% include './components/side_bar.html.twig' %}
-
-      {# Contenu #}
-      <div class="wrapper-layout" data-layout-target="wrapper">
-        <main class="main-content" id="main-content" tabindex="-1">
+  <body >
+        <main class="main-content">
 
           {% block body %}{% endblock %}
 
-          {# Toasts / Alerts #}
-          {% include './components/parts/_toasts.html.twig' %}
+
         </main>
-      </div>
-    </div>
+
 
     {% block page_scripts %}{% endblock %}
   </body>

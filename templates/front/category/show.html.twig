@@ -1,0 +1,72 @@
+{# templates/front/category/show.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ category.metaTitle ?? (category.name ~ ' - NUTRI CITY') }}{% endblock %}
+{% block meta_desc %}{{ category.metaDescription ?? category.description }}{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+  <nav aria-label="Fil d'Ariane">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ path('home') }}">Accueil</a></li>
+      <li class="breadcrumb-item"><a href="{{ path('catalogue') }}">Produits</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ category.name }}</li>
+    </ol>
+  </nav>
+
+  <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+    <div>
+      <h1 class="h4 fw-bold mb-1">{{ category.name }}</h1>
+      {% if category.description %}
+        <p class="text-muted mb-0">{{ category.description }}</p>
+      {% endif %}
+    </div>
+    <a class="btn btn-outline-secondary" href="{{ path('catalogue', {cat: category.slug}) }}">
+      <i class="fas fa-filter me-1" aria-hidden="true"></i> Filtrer
+    </a>
+  </div>
+
+  <div class="row g-4">
+    {% for product in products %}
+      <div class="col-6 col-md-4 col-xl-3">
+        <div class="card product-card h-100">
+          <a href="{{ path('product_show', {slug: product.slug}) }}" class="text-decoration-none">
+            <img src="{{ product.photo ? asset('uploads/products/' ~ product.photo) : asset('img/placeholder.png') }}"
+                 alt="{{ product.name }}" class="card-img-top" loading="lazy">
+          </a>
+          <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between gap-2">
+              <h2 class="h6 mb-1">
+                <a class="text-decoration-none text-dark" href="{{ path('product_show', {slug: product.slug}) }}">
+                  {{ product.name }}
+                </a>
+              </h2>
+              {% if product.isNew %}
+                <span class="badge bg-warning text-dark">Nouveau</span>
+              {% endif %}
+            </div>
+
+            <div class="fw-bold text-nutri-green mb-2">{{ product.price|number_format(2, ',', ' ') }} EUR</div>
+
+            {% if product.stock > 0 %}
+              <form action="{{ path('cart_add', {id: product.id}) }}" method="post">
+                <input type="hidden" name="_token" value="{{ csrf_token('cart_add') }}">
+                <input type="hidden" name="quantity" value="1">
+                <button class="btn btn-nutri-green w-100" type="submit">
+                  <i class="fas fa-cart-plus me-1" aria-hidden="true"></i> Ajouter
+                </button>
+              </form>
+            {% else %}
+              <span class="badge bg-danger w-100 text-center py-2">Hors stock</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <div class="col-12">
+        <div class="alert alert-warning" role="alert">Aucun produit dans cette categorie.</div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

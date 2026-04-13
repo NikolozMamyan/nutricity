@@ -1,0 +1,475 @@
+:root {
+  /* --- Palette Nutri (déjà présentes) --- */
+ --nutri-green:#2D6A4F;
+  --nutri-green-light:#52B788;
+  --nutri-green-pale:#D8F3DC;
+  --nutri-dark:#1B4332;
+  --nutri-accent:#74C69D;
+
+  --warm-cream:#FEFAE0;
+  --warm-tan:#DDA15E;
+  --warm-brown:#BC6C25;
+
+  --text-dark:#1a1a1a;
+  --text-muted:#6b7280;
+
+  --sidebar-width:240px;
+    --sidebar-w: var(--sidebar-width); /* ✅ alias */
+  --topbar-height:52px;
+
+  /* alias attendus par tes pages */
+  --header-h: var(--topbar-height);
+  --text: var(--text-dark);
+  --cream: var(--warm-cream);
+
+  --tan:   var(--warm-tan);
+  --brown: var(--warm-brown);
+
+  --green-900: var(--nutri-dark);
+  --green-800: var(--nutri-green);
+  --green-500: var(--nutri-green-light);
+  --green-300: var(--nutri-accent);
+  --green-100: var(--nutri-green-pale);
+
+  /* variables manquantes utilisées dans la base */
+  --color-white: #fff;
+  --shadow-sm: 0 2px 10px rgba(0,0,0,0.06);
+  --radius-md: 12px;
+    --border: rgba(255,255,255,0.10); /* ou rgba(0,0,0,0.08) selon où tu l'utilises */
+  --radius-sm: 10px;
+  --shadow-md: 0 8px 22px rgba(0,0,0,0.12);
+  --transition: 0.2s ease;
+}
+   
+        body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: var(--warm-cream);
+      color: var(--text-dark);
+        }
+         * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+/* ---- Layout ---- */
+.wrapper-layout {
+  display: flex;
+  justify-content: center; /* centre horizontalement */
+  align-items: flex-start; /* en haut, mais tu peux mettre center si tu veux verticalement centré */
+  margin-left: var(--sidebar-w);
+  min-height: 100vh;
+
+}
+a{
+  text-decoration: none;
+}
+
+
+.main-content {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .wrapper-layout {
+    margin-left: 0;
+    padding: 0px;
+  }
+
+  .main-content {
+    max-width: 100%;
+  }
+}
+
+
+    /* ============================================================
+       FLASH MESSAGES
+    ============================================================ */
+    .flash-zone {
+      padding: 12px 24px 0;
+    }
+
+    .alert {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      margin-bottom: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      position: relative;
+    }
+
+    .alert-success {
+      background: rgba(82,183,136,0.1);
+      border: 1px solid rgba(82,183,136,0.25);
+      color: var(--green-800);
+    }
+
+    .alert-danger {
+      background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.2);
+      color: #b91c1c;
+    }
+
+    .alert-warning {
+      background: rgba(245,158,11,0.08);
+      border: 1px solid rgba(245,158,11,0.2);
+      color: #92400e;
+    }
+
+    .alert-close {
+      margin-left: auto;
+      width: 22px; height: 22px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      opacity: 0.5;
+      transition: opacity var(--transition), background var(--transition);
+      flex-shrink: 0;
+    }
+
+    .alert-close:hover { opacity: 1; background: rgba(0,0,0,0.06); }
+
+    /* ============================================================
+   PRODUCT GRID (Catalogue cards) — GLOBAL
+   Utilisé sur /produits + Home sections
+============================================================ */
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* ── Card ── */
+.product-card {
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.24s, box-shadow 0.24s;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 14px 36px rgba(0,0,0,0.1);
+}
+
+/* Image */
+.product-img {
+  position: relative;
+  aspect-ratio: 1;
+  background: var(--green-100);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.32s;
+}
+
+.product-card:hover .product-img img {
+  transform: scale(1.06);
+}
+
+.product-placeholder {
+  font-size: 3.2rem;
+  color: var(--green-800);
+  opacity: 0.22;
+}
+
+/* Badges */
+.badge-new,
+.badge-low {
+  position: absolute;
+  top: 10px;
+  border-radius: 100px;
+  padding: 3px 10px;
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  z-index: 1;
+}
+
+.badge-new {
+  left: 10px;
+  background: var(--tan);
+  color: #fff;
+}
+
+.badge-low {
+  right: 10px;
+  background: #ef4444;
+  color: #fff;
+}
+
+/* Quick-add overlay */
+.product-overlay {
+  position: absolute;
+  inset: auto 0 0;
+  background: linear-gradient(to top, rgba(27,67,50,0.86) 0%, transparent 100%);
+  padding: 1.4rem 0.8rem 0.8rem;
+  display: flex;
+  justify-content: center;
+  transform: translateY(100%);
+  transition: transform 0.26s ease;
+}
+
+.product-card:hover .product-overlay {
+  transform: translateY(0);
+}
+
+/* CTA add button */
+.btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  color: var(--green-800);
+  border: none;
+  border-radius: 100px;
+  padding: 8px 18px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, transform 0.14s;
+  white-space: nowrap;
+}
+
+.btn-add:hover {
+  background: var(--green-300);
+  color: #fff;
+  transform: scale(1.03);
+}
+
+.btn-add.is-loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.btn-add.is-success {
+  background: var(--green-800);
+  color: #fff;
+}
+
+/* Body */
+.product-body {
+  padding: 0.95rem 1.05rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-cat {
+  font-size: 0.64rem;
+  color: var(--green-500);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.3rem;
+}
+
+.product-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--green-900);
+  margin-bottom: 0.3rem;
+  line-height: 1.3;
+  flex: 1;
+}
+
+.product-name a {
+  color: inherit;
+  transition: color 0.18s;
+}
+
+.product-name a:hover {
+  color: var(--green-800);
+}
+
+.product-desc {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin-bottom: 0.75rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 0.55rem;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  margin-top: auto;
+}
+
+.product-price {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: var(--green-800);
+  line-height: 1;
+}
+
+.product-price small {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.btn-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+  transition: color 0.18s;
+  white-space: nowrap;
+}
+
+.btn-detail:hover {
+  color: var(--green-800);
+}
+
+/* ============================================================
+   TOAST (utilisé par Stimulus catalogue controller)
+============================================================ */
+
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.13);
+  min-width: 270px;
+  max-width: 340px;
+  overflow: hidden;
+  transform: translateX(120%);
+  transition: transform 0.36s cubic-bezier(0.34,1.56,0.64,1);
+  pointer-events: all;
+}
+
+.toast.is-show { transform: translateX(0); }
+.toast.is-hide {
+  transform: translateX(120%);
+  transition: transform 0.25s ease;
+}
+
+.toast-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 12px 14px;
+}
+
+.toast-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--green-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: var(--green-800);
+  flex-shrink: 0;
+}
+
+.toast-icon.is-error   { background: rgba(239,68,68,0.09); color: #dc2626; }
+.toast-icon.is-warning { background: rgba(245,158,11,0.1); color: #d97706; }
+
+.toast-body { flex: 1; }
+.toast-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--green-900);
+  margin-bottom: 2px;
+}
+.toast-msg {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+  opacity: 0.5;
+  padding: 2px;
+  align-self: flex-start;
+  transition: opacity 0.18s;
+}
+
+.toast-close:hover { opacity: 1; }
+
+.toast-bar {
+  height: 3px;
+  background: var(--green-800);
+  width: 100%;
+  transform-origin: left;
+  animation: toastBar 3.5s linear forwards;
+}
+
+.toast-bar.is-error   { background: #dc2626; }
+.toast-bar.is-warning { background: #d97706; }
+
+@keyframes toastBar {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+
+/* ============================================================
+   Reveal helper (si tu l'utilises)
+============================================================ */
+
+.reveal { opacity: 1; } /* (garde si tu as déjà une anim ailleurs) */
+
+/* ============================================================
+   RESPONSIVE (Catalogue cards)
+============================================================ */
+
+@media (max-width: 1200px) {
+  .product-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 860px) {
+  .product-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 520px) {
+  .product-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .product-overlay {
+    transform: translateY(0);
+    background: linear-gradient(to top, rgba(27,67,50,0.7), transparent);
+  }
+}

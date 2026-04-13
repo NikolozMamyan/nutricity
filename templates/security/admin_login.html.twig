@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin • Connexion</title>
+
+  {# si tu as déjà des tokens dans admin.css ça peut rester #}
+  <link rel="stylesheet" href="{{ asset('admin/admin.css') }}">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap');
+
+    :root{
+      --bg: #FEFAE0;
+      --dark: #1B4332;
+      --green: #2D6A4F;
+      --greenL: #52B788;
+      --mint: #D8F3DC;
+      --tan: #DDA15E;
+      --muted: #6b7280;
+
+      --border: rgba(0,0,0,.08);
+      --shadow: 0 10px 40px rgba(0,0,0,.12);
+      --shadow2: 0 18px 70px rgba(0,0,0,.16);
+
+      --radius: 20px;
+    }
+
+    body{
+      margin:0;
+      font-family: "DM Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--dark);
+    }
+
+    .auth-wrap{
+      min-height: 100vh;
+      display:grid;
+      place-items:center;
+      padding: clamp(18px, 4vw, 34px);
+      background:
+        radial-gradient(900px 520px at 20% 10%, rgba(82,183,136,0.22), transparent 60%),
+        radial-gradient(860px 520px at 85% 0%, rgba(221,161,94,0.22), transparent 55%),
+        radial-gradient(900px 520px at 70% 90%, rgba(116,198,157,0.18), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,0)),
+        var(--bg);
+      position: relative;
+      overflow:hidden;
+    }
+
+    /* subtle grain */
+    .auth-wrap::after{
+      content:'';
+      position:absolute; inset:0;
+      background-image: radial-gradient(rgba(0,0,0,.05) 1px, transparent 1px);
+      background-size: 32px 32px;
+      opacity:.18;
+      pointer-events:none;
+    }
+
+    .auth-shell{
+      width: min(980px, 100%);
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: clamp(16px, 3vw, 28px);
+      align-items: stretch;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Left brand panel */
+    .brand{
+      border-radius: var(--radius);
+      padding: clamp(18px, 3.4vw, 28px);
+      background:
+        radial-gradient(ellipse at 25% 20%, rgba(255,255,255,.18), transparent 55%),
+        linear-gradient(145deg, var(--dark), var(--green));
+      color: #fff;
+      box-shadow: var(--shadow2);
+      position: relative;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      min-height: 420px;
+    }
+
+    .brand::before{
+      content:'';
+      position:absolute; inset:-60px;
+      background: radial-gradient(circle at 30% 30%, rgba(82,183,136,.35), transparent 55%);
+      transform: rotate(12deg);
+      opacity:.8;
+      pointer-events:none;
+    }
+
+    .brand-top{
+      position:relative;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 14px;
+    }
+
+    .logo{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .logo-mark{
+      width: 44px; height: 44px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.18);
+      display:grid;
+      place-items:center;
+      box-shadow: 0 10px 26px rgba(0,0,0,.18);
+      backdrop-filter: blur(8px);
+    }
+
+    .logo-mark svg{
+      width: 22px; height: 22px;
+      color: #fff;
+      opacity:.95;
+    }
+
+    .brand-title{
+      font-family: "Playfair Display", serif;
+      font-weight: 900;
+      letter-spacing: -.01em;
+      font-size: 1.5rem;
+      margin:0;
+      line-height:1.05;
+    }
+
+    .brand-sub{
+      margin-top: 6px;
+      color: rgba(255,255,255,.75);
+      line-height:1.6;
+      font-size: .92rem;
+      max-width: 44ch;
+    }
+
+    .role-badge{
+      align-self:flex-start;
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: rgba(221,161,94,.22);
+      border: 1px solid rgba(221,161,94,.35);
+      color: #fff;
+      font-weight: 800;
+      font-size: .78rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .brand-bottom{
+      position:relative;
+      display:flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.16);
+      color: rgba(255,255,255,.85);
+      font-weight: 700;
+      font-size: .82rem;
+      backdrop-filter: blur(8px);
+    }
+    .pill svg{ width: 16px; height: 16px; opacity:.95; }
+
+    /* Right login card */
+    .auth-card{
+      border-radius: var(--radius);
+      padding: clamp(18px, 3.4vw, 28px);
+      background: rgba(255,255,255,.78);
+      border: 1px solid rgba(0,0,0,.08);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+      position:relative;
+      overflow:hidden;
+      min-height: 420px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+    }
+    .auth-card::before{
+      content:'';
+      position:absolute; top:0; left:0; right:0; height:4px;
+      background: linear-gradient(90deg, var(--green), var(--greenL));
+    }
+
+    .form-head{ margin-bottom: 10px; position:relative; }
+    .form-head h1{
+      margin: .2rem 0 .35rem;
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--dark);
+      letter-spacing: -.01em;
+    }
+    .form-head p{
+      margin:0;
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.6;
+    }
+
+    .alert{
+      border-radius: 16px;
+      border: 1px solid rgba(239,68,68,.25);
+      background: rgba(239,68,68,.08);
+      padding: 12px 14px;
+      margin-top: 14px;
+    }
+    .alert strong{ display:block; font-weight: 900; color: #991b1b; }
+    .alert .muted{ margin-top: 3px; color: #7f1d1d; font-weight: 700; font-size: .9rem; opacity:.9; }
+
+    form{ margin-top: 14px; position:relative; }
+
+    .field{ margin-top: 12px; }
+    label{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: .88rem;
+      color: var(--dark);
+      margin-bottom: 6px;
+    }
+    .label-hint{ font-weight:700; color: var(--muted); font-size: .78rem; }
+
+    .input{
+      width: 100%;
+      border-radius: 14px;
+      padding: 12px 12px;
+      border: 1.5px solid rgba(0,0,0,.12);
+      background: rgba(254,250,224,.75);
+      color: var(--dark);
+      font-size: .95rem;
+      transition: border-color .2s, box-shadow .2s, background .2s, transform .08s;
+    }
+    .input:focus{
+      outline:none;
+      border-color: rgba(82,183,136,.55);
+      box-shadow: 0 0 0 4px rgba(82,183,136,.18);
+      background: #fff;
+    }
+    .input:active{ transform: translateY(1px); }
+
+    .pass-row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .toggle{
+      flex-shrink:0;
+      height: 44px;
+      padding: 0 12px;
+      border-radius: 14px;
+      border: 1.5px solid rgba(0,0,0,.12);
+      background: rgba(255,255,255,.72);
+      cursor:pointer;
+      font-weight: 900;
+      color: var(--green);
+      transition: transform .12s, background .2s;
+    }
+    .toggle:hover{ background: #fff; }
+    .toggle:active{ transform: translateY(1px); }
+
+    .actions{
+      display:flex;
+      gap: 12px;
+      align-items:center;
+      justify-content:space-between;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn{
+      appearance:none;
+      border:none;
+      cursor:pointer;
+      font-weight: 900;
+      letter-spacing: .01em;
+      border-radius: 14px;
+      padding: 12px 14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap: 10px;
+      min-height: 46px;
+    }
+    .btn-primary{
+      width: 100%;
+      background: linear-gradient(135deg, var(--green), var(--greenL));
+      color: #fff;
+      box-shadow: 0 10px 28px rgba(45,106,79,.28);
+      transition: transform .2s, box-shadow .2s, opacity .2s;
+    }
+    .btn-primary:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 14px 38px rgba(45,106,79,.36);
+    }
+    .btn-primary:disabled{ opacity:.65; cursor:not-allowed; transform:none; }
+
+    .hint{
+      color: var(--muted);
+      font-size: .85rem;
+      line-height: 1.55;
+      max-width: 38ch;
+    }
+
+    .footer{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap: 14px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(0,0,0,.08);
+      color: var(--muted);
+      font-size: .85rem;
+    }
+    .backlink{
+      color: var(--green);
+      text-decoration:none;
+      font-weight: 900;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+    }
+    .backlink:hover{ text-decoration: underline; }
+
+    /* small screens */
+    @media (max-width: 900px){
+      .auth-shell{ grid-template-columns: 1fr; }
+      .brand{ min-height: unset; }
+      .auth-card{ min-height: unset; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="auth-wrap">
+    <section class="auth-shell" aria-label="Connexion admin">
+
+      <aside class="brand">
+        <div class="brand-top">
+          <div class="logo">
+            <div class="logo-mark" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M3 12h18"/><path d="M12 3v18"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="brand-title">NUTRI CITY</h2>
+              <div class="brand-sub">Accès sécurisé au backoffice. Gérez les produits, stocks et commandes.</div>
+            </div>
+          </div>
+
+          <span class="role-badge">Admin</span>
+        </div>
+
+        <div class="brand-bottom" aria-label="Sécurité">
+          <span class="pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2l8 4v6c0 5-3.5 9.4-8 10-4.5-.6-8-5-8-10V6l8-4z"/>
+              <path d="M9 12l2 2 4-4"/>
+            </svg>
+            Session protégée
+          </span>
+          <span class="pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+            </svg>
+            Accès rapide
+          </span>
+          <span class="pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21V8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v13"/>
+              <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+            Backoffice /admin
+          </span>
+        </div>
+      </aside>
+
+      <section class="auth-card">
+        <div>
+          <div class="form-head">
+            <h1>Connexion</h1>
+            <p>Connectez-vous avec votre compte administrateur.</p>
+          </div>
+
+          {% if error %}
+            <div class="alert" role="alert" aria-live="polite">
+              <strong>Connexion impossible</strong>
+              <div class="muted">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+            </div>
+          {% endif %}
+
+          <form method="post" action="{{ path('app_admin_login') }}" data-auth-form>
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+            <div class="field">
+              <label for="username">
+                Email
+                <span class="label-hint">ex: admin@nutricity.fr</span>
+              </label>
+              <input class="input" id="username" type="email" name="_username"
+                     value="{{ last_username }}" required autofocus
+                     placeholder="admin@tonsite.fr" autocomplete="email">
+            </div>
+
+            <div class="field">
+              <label for="password">Mot de passe</label>
+              <div class="pass-row">
+                <input class="input" id="password" type="password" name="_password"
+                       required placeholder="••••••••" autocomplete="current-password">
+                <button class="toggle" type="button" data-toggle-pass aria-label="Afficher le mot de passe">
+                  Voir
+                </button>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn-primary" type="submit" data-submit>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M12 17l-5-5 5-5"/><path d="M7 12h14"/>
+                </svg>
+                Se connecter
+              </button>
+
+              <div class="hint">
+                Accès réservé aux administrateurs.<br>
+                Après connexion → redirection vers <strong>/admin</strong>.
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="footer">
+          <span>© {{ "now"|date("Y") }} NUTRI CITY</span>
+          <a class="backlink" href="/">
+            Retour site
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </div>
+      </section>
+
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const form = document.querySelector('[data-auth-form]');
+      const btn = document.querySelector('[data-submit]');
+      const toggle = document.querySelector('[data-toggle-pass]');
+      const pass = document.getElementById('password');
+
+      toggle?.addEventListener('click', () => {
+        const isPwd = pass.type === 'password';
+        pass.type = isPwd ? 'text' : 'password';
+        toggle.textContent = isPwd ? 'Masquer' : 'Voir';
+        toggle.setAttribute('aria-label', isPwd ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+        pass.focus();
+      });
+
+      form?.addEventListener('submit', () => {
+        if (!btn) return;
+        btn.disabled = true;
+        const old = btn.innerHTML;
+        btn.dataset.old = old;
+        btn.innerHTML = old.replace('Se connecter', 'Connexion…');
+        // si la page ne reload pas (rare), on réactive au bout de 8s
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.innerHTML = btn.dataset.old || old;
+        }, 8000);
+      });
+    })();
+  </script>
+</body>
+</html>

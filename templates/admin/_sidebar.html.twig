@@ -1,0 +1,207 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+  .sidebar {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--nutri-dark);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  /* ── Brand ───────────────────────────────── */
+  .sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 16px 16px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .brand-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--nutri-green-light), var(--nutri-green));
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(45,106,79,.4);
+  }
+  .brand-text-main {
+    font-size: 14px; font-weight: 800; color: #fff;
+    letter-spacing: .01em; line-height: 1.2;
+  }
+  .brand-text-sub {
+    font-size: 11px; color: rgba(255,255,255,.45);
+    font-weight: 500; margin-top: 1px;
+  }
+
+  /* ── Nav ─────────────────────────────────── */
+  .sidebar-nav {
+    flex: 1;
+    padding: 12px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow-y: auto;
+  }
+
+  .nav-section-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .1em; color: rgba(255,255,255,.3);
+    padding: 10px 8px 4px;
+    margin-top: 4px;
+  }
+  .nav-section-label:first-child { margin-top: 0; }
+
+  .nav-link {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px; border-radius: 9px;
+    color: rgba(255,255,255,.65);
+    text-decoration: none; font-size: 13px; font-weight: 500;
+    transition: all .15s; position: relative;
+    border: 1px solid transparent;
+  }
+  .nav-link:hover {
+    color: #fff;
+    background: rgba(255,255,255,.07);
+  }
+  .nav-link.active {
+    color: #fff;
+    background: rgba(82,183,136,.18);
+    border-color: rgba(82,183,136,.28);
+    font-weight: 600;
+  }
+  .nav-link.active .nav-icon { color: var(--nutri-green-light); }
+
+  .nav-icon {
+    width: 16px; height: 16px; flex-shrink: 0;
+    color: rgba(255,255,255,.4);
+    transition: color .15s;
+  }
+  .nav-link:hover .nav-icon { color: rgba(255,255,255,.8); }
+
+  .nav-badge {
+    margin-left: auto;
+    font-size: 10px; font-weight: 700;
+    background: rgba(82,183,136,.25);
+    color: var(--nutri-green-light);
+    border-radius: 20px; padding: 2px 7px;
+    border: 1px solid rgba(82,183,136,.2);
+  }
+
+  /* ── Bottom ──────────────────────────────── */
+  .sidebar-bottom {
+    padding: 10px;
+    border-top: 1px solid rgba(255,255,255,.07);
+  }
+  .sidebar-user {
+    display: flex; align-items: center; gap: 9px;
+    padding: 9px 10px; border-radius: 9px;
+    transition: background .15s; cursor: default;
+  }
+  .sidebar-user:hover { background: rgba(255,255,255,.06); }
+  .user-avatar {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--warm-tan), var(--warm-brown));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+  }
+  .user-name  { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.85); line-height: 1.3; }
+  .user-role  { font-size: 10px; color: rgba(255,255,255,.35); }
+</style>
+
+{# Brand #}
+<div class="sidebar-brand">
+  <div class="brand-icon">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2">
+      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+  </div>
+  <div>
+    <div class="brand-text-main">Épicerie Admin</div>
+    <div class="brand-text-sub">Click & Collect</div>
+  </div>
+</div>
+
+{# Nav #}
+<nav class="sidebar-nav">
+
+  {% set r = app.request.attributes.get('_route') %}
+
+  <div class="nav-section-label">Principal</div>
+
+  <a href="{{ path('admin_dashboard') }}"
+     class="nav-link {{ r starts with 'admin_dashboard' ? 'active' : '' }}">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+    Dashboard
+  </a>
+
+  <a href="{{ path('admin_orders_index') }}"
+     class="nav-link {{ r starts with 'admin_orders' ? 'active' : '' }}">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+      <rect x="9" y="3" width="6" height="4" rx="1"/>
+      <path d="M9 12h6M9 16h4"/>
+    </svg>
+    Commandes
+  </a>
+
+  <div class="nav-section-label">Catalogue</div>
+
+  <a href="{{ path('admin_products_index') }}"
+     class="nav-link {{ r starts with 'admin_products' ? 'active' : '' }}">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <path d="M16 10a4 4 0 01-8 0"/>
+    </svg>
+    Produits
+  </a>
+
+  <a href="{{ path('admin_categories_index') }}"
+     class="nav-link {{ r starts with 'admin_categories' ? 'active' : '' }}">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
+      <line x1="7" y1="7" x2="7.01" y2="7"/>
+    </svg>
+    Catégories
+  </a>
+
+  <div class="nav-section-label">Clients</div>
+
+  <a href="{{ path('admin_users_index') }}"
+     class="nav-link {{ r starts with 'admin_users' ? 'active' : '' }}">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+    </svg>
+    Utilisateurs
+  </a>
+
+  <a href="{{ path('admin_carts_index') }}"
+     class="nav-link {{ r starts with 'admin_carts' ? 'active' : '' }}">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+      <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.96-1.61L23 6H6"/>
+    </svg>
+    Paniers abandonnés
+  </a>
+
+</nav>
+
+{# Bottom user #}
+<div class="sidebar-bottom">
+  <div class="sidebar-user">
+    <div class="user-avatar">
+      {{ app.user ? app.user.email|first|upper : 'A' }}
+    </div>
+    <div>
+      <div class="user-name">{{ app.user ? app.user.email : 'Admin' }}</div>
+      <div class="user-role">Administrateur</div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,19 @@
+ {# ── FLASH MESSAGES ── #}
+    {% if app.flashes|length %}
+      <div class="flash-zone" role="region" aria-label="Notifications">
+        {% for label, messages in app.flashes %}
+          {% set alertClass = label == 'success' ? 'alert-success' : (label == 'error' ? 'alert-danger' : 'alert-warning') %}
+          {% for msg in messages %}
+            <div class="alert {{ alertClass }}" role="alert">
+              {% if label == 'success' %}<i class="fas fa-circle-check"></i>
+              {% elseif label == 'error' %}<i class="fas fa-circle-xmark"></i>
+              {% else %}<i class="fas fa-triangle-exclamation"></i>{% endif %}
+              <span>{{ msg }}</span>
+              <button class="alert-close" onclick="this.closest('.alert').remove()" aria-label="Fermer">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          {% endfor %}
+        {% endfor %}
+      </div>
+    {% endif %}

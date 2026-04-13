@@ -1,0 +1,31 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Paniers abandonnés{% endblock %}
+
+{% block body %}
+  <div class="hstack" style="justify-content:space-between; margin-bottom:12px;">
+    <div>
+      <h1>Paniers abandonnés</h1>
+      <div class="muted">Abandonné = inactif depuis {{ minutes }} minutes (status ACTIVE).</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <table class="table">
+      <thead><tr><th>ID</th><th>Email</th><th>Téléphone</th><th>Total</th><th>Dernière activité</th><th></th></tr></thead>
+      <tbody>
+      {% for c in carts %}
+        <tr>
+          <td>#{{ c.id }}</td>
+          <td>{{ c.email ?: '—' }}</td>
+          <td>{{ c.phone ?: '—' }}</td>
+          <td>{{ c.total|number_format(2,'.',' ') }} €</td>
+          <td>{{ c.updatedAt|date('d/m/Y H:i') }}</td>
+          <td><a class="btn" href="{{ path('admin_carts_show', {id:c.id}) }}">Ouvrir</a></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6" class="muted">Aucun panier abandonné.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

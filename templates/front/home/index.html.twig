@@ -1,0 +1,1076 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}NUTRI CITY – Épicerie des pays de l'Est | Accueil{% endblock %}
+
+
+{% block body %}
+<style>
+
+  /* ============================================================
+     HERO
+  ============================================================ */
+  .hero {
+    min-height: calc(92vh - var(--header-h));
+    background:
+      radial-gradient(ellipse at 60% 40%, rgba(82,183,136,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse at 10% 80%, rgba(116,198,157,0.12) 0%, transparent 50%),
+      linear-gradient(160deg, var(--green-900) 0%, var(--green-800) 45%, #3d8b68 100%);
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 80% 20%, rgba(255,255,255,0.025) 1px, transparent 1px),
+      radial-gradient(circle at 20% 70%, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 60px 60px, 80px 80px;
+  }
+
+  .hero-leaf {
+    position: absolute;
+    opacity: 0.035;
+    color: #fff;
+    pointer-events: none;
+    font-size: 8rem;
+  }
+
+  .hero-leaf:nth-child(1) { top: 5%;    right: 5%;  font-size: 12rem; transform: rotate(25deg); }
+  .hero-leaf:nth-child(2) { bottom: 10%; left: 3%;   font-size: 7rem;  transform: rotate(-15deg); }
+  .hero-leaf:nth-child(3) { top: 40%;   right: 20%; font-size: 5rem;  transform: rotate(45deg); }
+
+  .hero-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 1260px;
+    margin: 0 auto;
+    padding: 5rem 2.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 5rem;
+    width: 100%;
+  }
+
+  /* Left col */
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(116,198,157,0.18);
+    border: 1px solid rgba(116,198,157,0.38);
+    color: var(--green-300);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 1.4rem;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.6rem, 5.5vw, 4.6rem);
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.1;
+    margin-bottom: 1.4rem;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--green-300);
+  }
+
+  .hero-desc {
+    font-size: 1.05rem;
+    color: rgba(255,255,255,0.72);
+    max-width: 500px;
+    line-height: 1.75;
+    margin-bottom: 2.2rem;
+    font-weight: 300;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    background: linear-gradient(135deg, var(--tan), var(--brown));
+    color: #fff;
+    border-radius: 100px;
+    padding: 0.95rem 2.1rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    box-shadow: 0 8px 28px rgba(221,161,94,0.38);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .btn-primary:hover {
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 38px rgba(221,161,94,0.5);
+  }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    border: 1.5px solid rgba(255,255,255,0.28);
+    border-radius: 100px;
+    padding: 0.95rem 2.1rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .btn-ghost:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.16);
+    border-color: rgba(255,255,255,0.48);
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 2.2rem;
+    margin-top: 3.2rem;
+    padding-top: 2.2rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+
+  .stat-number {
+    display: block;
+    font-size: 1.9rem;
+    font-weight: 900;
+    color: var(--green-300);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.55);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+    display: block;
+  }
+
+  /* Right col — cards grid */
+  .hero-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .hero-card {
+    background: rgba(255,255,255,0.07);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 18px;
+    padding: 1.4rem;
+    text-align: center;
+    color: #fff;
+    transition: background 0.2s, transform 0.2s;
+  }
+
+  .hero-card:hover {
+    background: rgba(255,255,255,0.13);
+    transform: translateY(-3px);
+  }
+
+  .hero-card i {
+    font-size: 1.9rem;
+    margin-bottom: 0.65rem;
+    display: block;
+    color: var(--green-300);
+  }
+
+  .hero-card span {
+    font-size: 0.8rem;
+    font-weight: 500;
+    opacity: 0.88;
+  }
+
+  .hero-card.span-2 {
+    grid-column: span 2;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-align: left;
+    background: rgba(116,198,157,0.13);
+    border-color: rgba(116,198,157,0.28);
+  }
+
+  .hero-card.span-2 i {
+    font-size: 2.2rem;
+    margin-bottom: 0;
+    flex-shrink: 0;
+    color: var(--tan);
+  }
+
+  .hero-card.span-2 strong {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 0.95rem;
+  }
+
+  .hero-card.span-2 small {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.6);
+  }
+
+  /* ============================================================
+     SHARED SECTION STYLES
+  ============================================================ */
+  .section-wrap {
+    padding: 5rem 2.5rem;
+    max-width: 1260px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--green-800);
+    margin-bottom: 0.7rem;
+  }
+
+  .section-title {
+    font-size: clamp(1.7rem, 3.8vw, 2.7rem);
+    font-weight: 900;
+    color: var(--green-900);
+    line-height: 1.2;
+  }
+
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 3rem;
+  }
+
+  .btn-see-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--green-100);
+    color: var(--green-800);
+    border-radius: 100px;
+    padding: 8px 18px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: background 0.18s, color 0.18s;
+    white-space: nowrap;
+  }
+
+  .btn-see-all:hover {
+    background: var(--green-800);
+    color: #fff;
+  }
+
+  /* ============================================================
+     HOW IT WORKS
+  ============================================================ */
+  .how-section {
+    background: #fff;
+    position: relative;
+  }
+
+  .how-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--green-800), var(--green-300), var(--tan));
+  }
+
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+
+  .step-card {
+    position: relative;
+    text-align: center;
+    padding: 2.4rem 1.8rem;
+    border-radius: 22px;
+    background: var(--cream);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: transform 0.24s, box-shadow 0.24s;
+  }
+
+  .step-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 18px 48px rgba(45,106,79,0.1);
+  }
+
+  .step-num {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px; height: 30px;
+    background: var(--green-800);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  .step-icon {
+    width: 68px; height: 68px;
+    background: linear-gradient(135deg, var(--green-100), rgba(116,198,157,0.28));
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0.5rem auto 1.1rem;
+    font-size: 1.7rem;
+    color: var(--green-800);
+  }
+
+  .step-card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--green-900);
+    margin-bottom: 0.55rem;
+  }
+
+  .step-card p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* ============================================================
+     CATEGORIES
+  ============================================================ */
+  .categories-section { background: var(--cream); }
+
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+
+  .cat-chip {
+    background: #fff;
+    border: 1.5px solid rgba(45,106,79,0.13);
+    border-radius: 14px;
+    padding: 1.3rem 1rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.65rem;
+    transition: all 0.22s;
+    color: var(--green-900);
+  }
+
+  .cat-chip:hover {
+    background: var(--green-800);
+    color: #fff;
+    border-color: var(--green-800);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 28px rgba(45,106,79,0.22);
+  }
+
+  .cat-chip i {
+    font-size: 1.65rem;
+    color: var(--green-800);
+    transition: color 0.22s;
+  }
+
+  .cat-chip:hover i { color: var(--green-300); }
+
+  .cat-chip span {
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  /* ============================================================
+     BEST SELLERS
+  ============================================================ */
+  .bestsellers-section { background: #fff; }
+
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+
+  .product-card {
+    border-radius: 18px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    border: 1px solid rgba(0,0,0,0.04);
+    transition: transform 0.24s, box-shadow 0.24s;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 14px 38px rgba(0,0,0,0.11);
+  }
+
+  .product-img {
+    position: relative;
+    aspect-ratio: 1;
+    background: var(--green-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .product-img img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.32s;
+  }
+
+  .product-card:hover .product-img img { transform: scale(1.06); }
+
+  .product-placeholder {
+    font-size: 3.2rem;
+    color: var(--green-800);
+    opacity: 0.28;
+  }
+
+  .badge-new, .badge-stock {
+    position: absolute;
+    top: 11px;
+    border-radius: 100px;
+    padding: 3px 10px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+  }
+
+  .badge-new   { left: 11px;  background: var(--tan);       color: #fff; }
+  .badge-stock { right: 11px; background: var(--green-800); color: #fff; }
+
+  .product-body {
+    padding: 1rem 1.1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .product-cat {
+    font-size: 0.65rem;
+    color: var(--green-500);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.3rem;
+  }
+
+  .product-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--green-900);
+    margin-bottom: 0.8rem;
+    line-height: 1.3;
+    flex: 1;
+  }
+
+  .product-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-top: auto;
+  }
+
+  .product-price {
+    font-size: 1.05rem;
+    font-weight: 900;
+    color: var(--green-800);
+    line-height: 1;
+  }
+
+  .product-price small {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .btn-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--green-100);
+    color: var(--green-800);
+    border-radius: 100px;
+    padding: 6px 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    transition: background 0.18s, color 0.18s;
+    white-space: nowrap;
+  }
+
+  .btn-add:hover {
+    background: var(--green-800);
+    color: #fff;
+  }
+
+  /* ============================================================
+     NEW ARRIVALS
+  ============================================================ */
+  .new-section {
+    background:
+      radial-gradient(ellipse at 80% 50%, rgba(116,198,157,0.14) 0%, transparent 60%),
+      linear-gradient(135deg, var(--green-900) 0%, var(--green-800) 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .new-section .section-label { color: var(--green-300); }
+  .new-section .section-title { color: #fff; }
+
+  .new-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+  }
+
+  .new-card {
+    background: rgba(255,255,255,0.07);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.11);
+    border-radius: 18px;
+    overflow: hidden;
+    transition: transform 0.24s, background 0.24s;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .new-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255,255,255,0.13);
+  }
+
+  .new-img {
+    aspect-ratio: 4 / 3;
+    background: rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .new-img img { width: 100%; height: 100%; object-fit: cover; }
+
+  .new-img i {
+    font-size: 2.8rem;
+    color: var(--green-300);
+    opacity: 0.55;
+  }
+
+  .new-body { padding: 1.2rem; color: #fff; flex: 1; display: flex; flex-direction: column; }
+
+  .new-cat {
+    font-size: 0.64rem;
+    color: var(--green-300);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.3rem;
+  }
+
+  .new-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+    line-height: 1.3;
+    flex: 1;
+  }
+
+  .new-price {
+    color: var(--green-300);
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .btn-new-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    border-radius: 100px;
+    padding: 7px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    transition: background 0.18s;
+    align-self: flex-start;
+  }
+
+  .btn-new-add:hover {
+    background: rgba(255,255,255,0.22);
+    color: #fff;
+  }
+
+  /* ============================================================
+     CTA
+  ============================================================ */
+  .cta-section { background: var(--cream); }
+
+  .cta-box {
+    background: linear-gradient(135deg, var(--green-100) 0%, rgba(116,198,157,0.18) 100%);
+    border: 2px solid rgba(45,106,79,0.13);
+    border-radius: 28px;
+    padding: 4rem 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-box::before {
+    content: '\f06c';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    font-size: 18rem;
+    color: rgba(45,106,79,0.04);
+    right: -2.5rem;
+    bottom: -3.5rem;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .cta-box h2 {
+    font-size: clamp(1.7rem, 3.5vw, 2.6rem);
+    font-weight: 900;
+    color: var(--green-900);
+    margin-bottom: 0.9rem;
+  }
+
+  .cta-box p {
+    color: var(--text-muted);
+    max-width: 480px;
+    margin: 0 auto 2rem;
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  .btn-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    background: var(--green-800);
+    color: #fff;
+    border-radius: 100px;
+    padding: 0.95rem 2.4rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    box-shadow: 0 8px 28px rgba(45,106,79,0.28);
+    transition: transform 0.2s, box-shadow 0.2s, background 0.18s;
+  }
+
+  .btn-cta:hover {
+    color: #fff;
+    background: var(--green-900);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 38px rgba(45,106,79,0.38);
+  }
+
+  /* ============================================================
+     ANIMATIONS
+  ============================================================ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(22px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============================================================
+     RESPONSIVE
+  ============================================================ */
+  @media (max-width: 1100px) {
+    .steps-grid      { grid-template-columns: repeat(2, 1fr); }
+    .categories-grid { grid-template-columns: repeat(3, 1fr); }
+    .products-grid   { grid-template-columns: repeat(2, 1fr); }
+    .new-grid        { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 768px) {
+    .hero-inner {
+      grid-template-columns: 1fr;
+      gap: 3rem;
+      padding: 4rem 1.4rem;
+    }
+
+    .hero-cards   { display: none; }
+    .hero-stats   { gap: 1.4rem; flex-wrap: wrap; }
+
+    .section-wrap { padding: 3.5rem 1.4rem; }
+
+    .categories-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .cta-box { padding: 2.8rem 1.5rem; }
+  }
+
+  @media (max-width: 500px) {
+    .steps-grid      { grid-template-columns: 1fr; }
+    .categories-grid { grid-template-columns: repeat(2, 1fr); }
+    .products-grid   { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .new-grid        { grid-template-columns: 1fr 1fr; gap: 12px; }
+  }
+</style>
+{# ══════════════════════════════════════════
+   HERO
+══════════════════════════════════════════ #}
+<section class="hero">
+  <i class="fas fa-leaf hero-leaf"></i>
+  <i class="fas fa-carrot hero-leaf"></i>
+  <i class="fas fa-seedling hero-leaf"></i>
+
+  <div class="hero-inner">
+
+    {# Left #}
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="fas fa-circle-check"></i>
+        Produits authentiques d'Europe de l'Est
+      </div>
+
+      <h1>
+        L'épicerie de <em>votre quartier</em>,<br>à portée de clic
+      </h1>
+
+      <p class="hero-desc">
+        Commandez vos produits frais, épicerie fine et spécialités d'Europe de l'Est.
+        Récupérez votre panier sans attente grâce au Click &amp; Collect — sans inscription.
+      </p>
+
+      <div class="hero-actions">
+        <a href="{{ path('catalogue') }}" class="btn-primary">
+          <i class="fas fa-store"></i>
+          Voir les produits
+        </a>
+        <a href="{{ path('click_collect') }}" class="btn-ghost">
+          <i class="fas fa-clock"></i>
+          Comment ça marche
+        </a>
+      </div>
+
+      <div class="hero-stats">
+        <div>
+          <span class="stat-number">{{ bestSellers|length > 0 ? bestSellers|length * 10 ~ '+' : '80+' }}</span>
+          <span class="stat-label">Produits frais</span>
+        </div>
+        <div>
+          <span class="stat-number">{{ categories|length > 0 ? categories|length : '12' }}</span>
+          <span class="stat-label">Catégories</span>
+        </div>
+        <div>
+          <span class="stat-number">2h</span>
+          <span class="stat-label">Délai retrait</span>
+        </div>
+      </div>
+    </div>
+
+    {# Right — cards #}
+    <div class="hero-cards">
+      <div class="hero-card span-2">
+        <i class="fas fa-map-marker-alt"></i>
+        <div>
+          <strong>Retrait en magasin</strong>
+          <small>Lun–Sam, 9h–20h · Strasbourg, Île-de-France</small>
+        </div>
+      </div>
+      <div class="hero-card">
+        <i class="fas fa-apple-alt"></i>
+        <span>Fruits &amp; Légumes</span>
+      </div>
+      <div class="hero-card">
+        <i class="fas fa-cheese"></i>
+        <span>Produits laitiers</span>
+      </div>
+      <div class="hero-card">
+        <i class="fas fa-bread-slice"></i>
+        <span>Boulangerie</span>
+      </div>
+      <div class="hero-card">
+        <i class="fas fa-fish"></i>
+        <span>Poissonnerie</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{# ══════════════════════════════════════════
+   HOW IT WORKS
+══════════════════════════════════════════ #}
+<section class="how-section">
+  <div class="section-wrap">
+
+    <div class="text-center reveal" style="text-align:center; margin-bottom:3rem;">
+      <div class="section-label" style="justify-content:center;">
+        <i class="fas fa-route"></i> Simple &amp; Rapide
+      </div>
+      <h2 class="section-title">Comment fonctionne le Click &amp; Collect ?</h2>
+    </div>
+
+    {% set steps = [
+      { icon: 'fa-magnifying-glass', title: 'Parcourez le catalogue',  desc: 'Découvrez nos produits frais sélectionnés chaque matin auprès de producteurs et artisans.' },
+      { icon: 'fa-basket-shopping',  title: 'Composez votre panier',   desc: 'Ajoutez vos articles favoris. Aucun compte requis — c\'est libre et immédiat.' },
+      { icon: 'fa-calendar-check',   title: 'Choisissez votre créneau', desc: 'Sélectionnez l\'horaire qui vous convient pour récupérer votre commande.' },
+      { icon: 'fa-bag-shopping',     title: 'Retirez votre panier',    desc: 'Venez récupérer vos produits, prêts et emballés avec soin, à la caisse dédiée.' }
+    ] %}
+
+    <div class="steps-grid">
+      {% for step in steps %}
+      <div class="step-card reveal" style="transition-delay: {{ loop.index0 * 0.1 }}s">
+        <div class="step-num">{{ loop.index }}</div>
+        <div class="step-icon"><i class="fas {{ step.icon }}"></i></div>
+        <h3>{{ step.title }}</h3>
+        <p>{{ step.desc }}</p>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+
+{# ══════════════════════════════════════════
+   CATEGORIES
+══════════════════════════════════════════ #}
+{% if categories is not empty %}
+<section class="categories-section">
+  <div class="section-wrap">
+
+    <div class="section-head reveal">
+      <div>
+        <div class="section-label"><i class="fas fa-layer-group"></i> Explorez</div>
+        <h2 class="section-title">Nos rayons</h2>
+      </div>
+      <a href="{{ path('catalogue') }}" class="btn-see-all">
+        Tout voir <i class="fas fa-arrow-right" style="font-size:0.75rem;"></i>
+      </a>
+    </div>
+
+    {% set cat_icons = ['fa-apple-alt','fa-carrot','fa-cheese','fa-bread-slice','fa-fish','fa-egg','fa-wine-bottle','fa-jar','fa-pepper-hot','fa-seedling'] %}
+
+    <div class="categories-grid">
+      {% for category in categories %}
+      <a href="{{ path('catalogue', { category: category.id }) }}"
+         class="cat-chip reveal"
+         style="transition-delay: {{ loop.index0 * 0.05 }}s">
+        <i class="fas {{ cat_icons[loop.index0 % cat_icons|length] }}" aria-hidden="true"></i>
+        <span>{{ category.name }}</span>
+      </a>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+{% endif %}
+
+{# ══════════════════════════════════════════
+   BEST SELLERS
+══════════════════════════════════════════ #}
+{# ══════════════════════════════════════════
+   BEST SELLERS (mêmes cards que Catalogue)
+══════════════════════════════════════════ #}
+{% if bestSellers is not empty %}
+<section class="bestsellers-section">
+  <div
+    class="section-wrap"
+    data-controller="catalogue"
+    data-catalogue-cart-data-url-value="{{ path('cart_data')|default('/panier/donnees') }}"
+    data-catalogue-add-url-template-value="/panier/ajouter/__ID__"
+  >
+    {# Toast container (comme catalogue) #}
+    <div class="toast-container" aria-live="polite" data-catalogue-target="toastContainer"></div>
+
+    <div class="section-head reveal">
+      <div>
+        <div class="section-label"><i class="fas fa-fire-flame-curved"></i> Les favoris</div>
+        <h2 class="section-title">Meilleures ventes</h2>
+      </div>
+      <a href="{{ path('catalogue') }}" class="btn-see-all">
+        Tout le catalogue <i class="fas fa-arrow-right" style="font-size:0.75rem;"></i>
+      </a>
+    </div>
+
+    {# IMPORTANT: on réutilise le layout du catalogue #}
+    <div class="product-grid">
+      {% for product in bestSellers %}
+      <article class="product-card reveal" style="transition-delay: {{ loop.index0 % 4 * 0.07 }}s">
+
+        <div class="product-img">
+          {% if product.image is defined and product.image %}
+            <img src="{{ asset('uploads/products/' ~ product.image) }}"
+                 alt="{{ product.name }}" loading="lazy">
+          {% else %}
+            <i class="fas fa-apple-alt product-placeholder" aria-hidden="true"></i>
+          {% endif %}
+
+          {% if product.isNew is defined and product.isNew %}
+            <span class="badge-new">Nouveau</span>
+          {% endif %}
+
+          {% if product.stock is defined and product.stock > 0 and product.stock <= 5 %}
+            <span class="badge-low">Plus que {{ product.stock }}</span>
+          {% endif %}
+
+          {% if product.stock is not defined or product.stock > 0 %}
+          <div class="product-overlay">
+            <button
+              type="button"
+              class="btn-add"
+              data-action="click->catalogue#addToCart"
+              data-catalogue-product-id-value="{{ product.id }}"
+              data-catalogue-product-name-value="{{ product.name|e('html_attr') }}"
+              aria-label="Ajouter {{ product.name }} au panier"
+            >
+              <i class="fas fa-basket-shopping" style="font-size:0.75rem;" aria-hidden="true"></i>
+              Ajouter au panier
+            </button>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="product-body">
+          {% if product.category is defined %}
+            <div class="product-cat">{{ product.category.name }}</div>
+          {% endif %}
+
+          <h3 class="product-name">
+            <a href="{{ path('product_show', { slug: product.slug }) }}">{{ product.name }}</a>
+          </h3>
+
+          {% if product.shortDescription is defined and product.shortDescription %}
+            <p class="product-desc">{{ product.shortDescription }}</p>
+          {% endif %}
+
+          <div class="product-foot">
+            <div class="product-price">
+              {% if product.price is defined %}
+                {{ product.price|number_format(2, ',', ' ') }} €
+                {% if product.unit is defined and product.unit %}
+                  <small>/ {{ product.unit }}</small>
+                {% endif %}
+              {% endif %}
+            </div>
+
+            <a href="{{ path('product_show', { slug: product.slug }) }}" class="btn-detail">
+              Détail <i class="fas fa-chevron-right" style="font-size:0.6rem;" aria-hidden="true"></i>
+            </a>
+          </div>
+        </div>
+
+      </article>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+{% endif %}
+
+{# ══════════════════════════════════════════
+   NEW ARRIVALS
+══════════════════════════════════════════ #}
+{% if newProducts is not empty %}
+<section class="new-section">
+  <div class="section-wrap">
+
+    <div class="section-head reveal">
+      <div>
+        <div class="section-label"><i class="fas fa-sparkles"></i> Nouveautés</div>
+        <h2 class="section-title">Tout juste arrivés</h2>
+      </div>
+      <a href="{{ path('catalogue') }}" class="btn-ghost" style="font-size:0.85rem; padding:7px 16px;">
+        Voir tout <i class="fas fa-arrow-right" style="font-size:0.72rem;"></i>
+      </a>
+    </div>
+
+    <div class="new-grid">
+      {% for product in newProducts %}
+      <article class="new-card reveal" style="transition-delay: {{ loop.index0 * 0.08 }}s">
+
+        <div class="new-img">
+          {% if product.image is defined and product.image %}
+            <img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ product.name }}" loading="lazy">
+          {% else %}
+            <i class="fas fa-leaf" aria-hidden="true"></i>
+          {% endif %}
+        </div>
+
+        <div class="new-body">
+          {% if product.category is defined %}
+            <div class="new-cat">{{ product.category.name }}</div>
+          {% endif %}
+          <div class="new-name">{{ product.name }}</div>
+          {% if product.price is defined %}
+            <div class="new-price">{{ product.price|number_format(2, ',', ' ') }} €</div>
+          {% endif %}
+          <a href="{{ path('catalogue') }}" class="btn-new-add">
+            <i class="fas fa-plus" style="font-size:0.7rem;"></i> Commander
+          </a>
+        </div>
+
+      </article>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+{% endif %}
+
+{# ══════════════════════════════════════════
+   CTA
+══════════════════════════════════════════ #}
+<section class="cta-section">
+  <div class="section-wrap">
+    <div class="cta-box reveal">
+      <div class="section-label" style="justify-content:center; margin-bottom:0.8rem;">
+        <i class="fas fa-clock"></i> Commandez maintenant
+      </div>
+      <h2>Prêt à remplir votre panier ?</h2>
+      <p>Pas besoin de créer de compte. Parcourez nos produits, choisissez vos articles et récupérez-les quand vous voulez.</p>
+      <a href="{{ path('catalogue') }}" class="btn-cta">
+        <i class="fas fa-store"></i>
+        Découvrir tous les produits
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

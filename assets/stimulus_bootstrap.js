@@ -1,5 +1,13 @@
 import { startStimulusApp } from '@symfony/stimulus-bundle';
+import ClickCollectController from './controllers/click_collect_controller.js';
+import LayoutController   from "./controllers/components/layout_controller.js";
+import CatalogueController from './controllers/catalogue_controller.js';
+import CartBadgeController from './controllers/cart_badge_controller.js';
+import ProductShowController from "./controllers/product_show_controller.js";
 
 const app = startStimulusApp();
-// register any custom, 3rd party controllers here
-// app.register('some_controller_name', SomeImportedController);
+app.register('click-collect', ClickCollectController);
+app.register("layout", LayoutController);
+app.register("catalogue", CatalogueController);
+app.register("cart-badge", CartBadgeController);
+app.register("product-show", ProductShowController);

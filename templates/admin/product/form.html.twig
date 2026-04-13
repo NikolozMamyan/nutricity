@@ -1,0 +1,227 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block body %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+
+  .pform-shell { font-family: 'DM Sans', sans-serif; max-width: 900px; }
+
+  .back-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 600; color: var(--text-muted);
+    text-decoration: none; margin-bottom: 20px; transition: color .15s;
+  }
+  .back-link:hover { color: var(--nutri-green); }
+
+  .pform-header {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px; margin-bottom: 24px;
+  }
+  .pform-title { font-size: 24px; font-weight: 800; color: var(--nutri-dark); }
+
+  /* ── Section cards ───────────────────────── */
+  .fcard {
+    background: rgba(255,255,255,.82); border: 1.5px solid var(--border);
+    border-radius: 16px; padding: 22px; box-shadow: var(--shadow-sm);
+    margin-bottom: 14px;
+  }
+  .fcard-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--text-muted);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 7px;
+  }
+  .fcard-title-icon {
+    width: 22px; height: 22px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--nutri-green-pale);
+  }
+  .fcard-title-icon svg { color: var(--nutri-green); }
+
+  /* ── Field grid ──────────────────────────── */
+  .fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .fgrid .full { grid-column: 1 / -1; }
+  .fgrid .third { grid-column: span 1; }
+
+  /* ── Override Symfony form styles ────────── */
+  .pform-shell .form-group,
+  .pform-shell div[class*="mb-"] { margin-bottom: 0; }
+
+  .pform-shell label {
+    font-size: 12px; font-weight: 600; color: var(--text-muted);
+    display: block; margin-bottom: 5px; text-transform: none;
+    letter-spacing: 0;
+  }
+  .pform-shell input[type="text"],
+  .pform-shell input[type="number"],
+  .pform-shell input[type="email"],
+  .pform-shell select,
+  .pform-shell textarea {
+    width: 100%; padding: 10px 13px;
+    border: 1.5px solid var(--border); border-radius: 10px;
+    background: rgba(255,255,255,.9); font-family: 'DM Sans', sans-serif;
+    font-size: 14px; color: var(--text-dark);
+    outline: none; transition: border-color .15s, box-shadow .15s;
+  }
+  .pform-shell input:focus,
+  .pform-shell select:focus,
+  .pform-shell textarea:focus {
+    border-color: var(--nutri-green-light);
+    box-shadow: 0 0 0 3px rgba(82,183,136,.12);
+  }
+  .pform-shell textarea { min-height: 100px; resize: vertical; }
+  .pform-shell .invalid-feedback { font-size: 11px; color: #ef4444; margin-top: 4px; }
+
+  /* ── Toggle switches (checkboxes) ────────── */
+  .toggle-row {
+    display: flex; gap: 20px; flex-wrap: wrap;
+  }
+  .toggle-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; border-radius: 10px;
+    border: 1.5px solid var(--border); background: #fff;
+    cursor: pointer; transition: all .15s; user-select: none;
+    flex: 1; min-width: 160px;
+  }
+  .toggle-item:has(input:checked) {
+    background: rgba(82,183,136,.08);
+    border-color: rgba(82,183,136,.3);
+  }
+  .pform-shell .toggle-item input[type="checkbox"] {
+    width: 16px; height: 16px; accent-color: var(--nutri-green);
+    cursor: pointer; flex-shrink: 0;
+  }
+  .toggle-label { font-size: 13px; font-weight: 600; color: var(--nutri-dark); }
+  .toggle-sub   { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+  /* ── Submit bar ──────────────────────────── */
+  .submit-bar {
+    display: flex; align-items: center; gap: 10px;
+    justify-content: flex-end; padding-top: 4px;
+  }
+  .btn-save {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 22px; border-radius: 10px;
+    background: var(--nutri-green); color: #fff;
+    font-size: 14px; font-weight: 700; border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    box-shadow: 0 4px 12px rgba(45,106,79,.25); transition: all .15s;
+  }
+  .btn-save:hover { background: var(--nutri-dark); transform: translateY(-1px); }
+  .btn-cancel {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 11px 18px; border-radius: 10px;
+    border: 1.5px solid var(--border); background: #fff;
+    font-size: 14px; font-weight: 600; text-decoration: none;
+    color: var(--text-muted); transition: all .15s;
+  }
+  .btn-cancel:hover { background: var(--nutri-green-pale); color: var(--nutri-dark); }
+</style>
+
+{{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+
+  <a href="{{ path('admin_products_index') }}" class="back-link">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Retour aux produits
+  </a>
+
+  <div class="pform-header">
+    <div class="pform-title">{{ title }}</div>
+  </div>
+
+  {# ── Infos principales ───────────────────── #}
+  <div class="fcard">
+    <div class="fcard-title">
+      <div class="fcard-title-icon">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </div>
+      Informations principales
+    </div>
+    <div class="fgrid">
+      <div>{{ form_row(form.name) }}</div>
+      <div>{{ form_row(form.slug) }}</div>
+      <div>{{ form_row(form.category) }}</div>
+      <div>{{ form_row(form.origin) }}</div>
+    </div>
+  </div>
+
+  {# ── Prix & stock ────────────────────────── #}
+  <div class="fcard">
+    <div class="fcard-title">
+      <div class="fcard-title-icon">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      </div>
+      Prix & stock
+    </div>
+    <div class="fgrid">
+      <div>{{ form_row(form.price) }}</div>
+      <div>{{ form_row(form.stock) }}</div>
+    </div>
+  </div>
+
+  {# ── Visibilité ──────────────────────────── #}
+  <div class="fcard">
+    <div class="fcard-title">
+      <div class="fcard-title-icon">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </div>
+      Visibilité
+    </div>
+    <div class="toggle-row">
+      <label class="toggle-item">
+        {{ form_widget(form.active) }}
+        <div>
+          <div class="toggle-label">Produit actif</div>
+          <div class="toggle-sub">Visible dans la boutique</div>
+        </div>
+      </label>
+      <label class="toggle-item">
+        {{ form_widget(form.isNew) }}
+        <div>
+          <div class="toggle-label">Nouveau produit</div>
+          <div class="toggle-sub">Badge "Nouveau" affiché</div>
+        </div>
+      </label>
+    </div>
+  </div>
+
+  {# ── Descriptions ────────────────────────── #}
+  <div class="fcard">
+    <div class="fcard-title">
+      <div class="fcard-title-icon">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      </div>
+      Descriptions
+    </div>
+    <div class="fgrid">
+      <div class="full">{{ form_row(form.shortDescription) }}</div>
+      <div class="full">{{ form_row(form.longDescription) }}</div>
+    </div>
+  </div>
+
+  {# ── SEO ─────────────────────────────────── #}
+  <div class="fcard">
+    <div class="fcard-title">
+      <div class="fcard-title-icon">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      </div>
+      SEO
+    </div>
+    <div class="fgrid">
+      <div class="full">{{ form_row(form.metaTitle) }}</div>
+      <div class="full">{{ form_row(form.metaDescription) }}</div>
+    </div>
+  </div>
+
+  {# ── Actions ─────────────────────────────── #}
+  <div class="submit-bar">
+    <a href="{{ path('admin_products_index') }}" class="btn-cancel">Annuler</a>
+    <button type="submit" class="btn-save">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Enregistrer
+    </button>
+  </div>
+
+{{ form_end(form) }}
+
+{% endblock %}

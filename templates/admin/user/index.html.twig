@@ -1,0 +1,61 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Utilisateurs{% endblock %}
+
+{% block body %}
+  <div class="hstack" style="justify-content:space-between; margin-bottom:12px;">
+    <div>
+      <h1>Utilisateurs</h1>
+      <div class="muted">Clients + admins. Gestion des rôles et du flag needsPasswordSetup.</div>
+    </div>
+    <a class="btn btn-primary" href="{{ path('admin_users_new') }}">Ajouter</a>
+  </div>
+
+  <div class="card" style="margin-bottom:12px;">
+    <form method="get" class="hstack">
+      <input name="q" value="{{ q }}" placeholder="Recherche (email/nom/prénom)..." style="max-width:360px;">
+      <select name="role" style="max-width:220px;">
+        <option value="">Tous rôles</option>
+        <option value="ROLE_ADMIN" {{ role == 'ROLE_ADMIN' ? 'selected' : '' }}>Admin</option>
+        <option value="ROLE_USER" {{ role == 'ROLE_USER' ? 'selected' : '' }}>Utilisateur</option>
+      </select>
+      <button class="btn">Filtrer</button>
+      <a class="btn" href="{{ path('admin_users_index') }}">Reset</a>
+    </form>
+  </div>
+
+  <div class="card">
+    <table class="table">
+      <thead>
+        <tr><th>Email</th><th>Nom</th><th>Rôles</th><th>Password setup</th><th></th></tr>
+      </thead>
+      <tbody>
+      {% for u in users %}
+        <tr>
+          <td style="font-weight:800;">{{ u.email }}</td>
+          <td class="muted">{{ u.fullName ?: '—' }}</td>
+          <td>
+            {% set roles = u.roles %}
+            {% for r in roles %}
+              <span class="badge">{{ r }}</span>
+            {% endfor %}
+          </td>
+          <td>
+            <span class="badge {{ u.needsPasswordSetup ? 'warn' : 'ok' }}">
+              {{ u.needsPasswordSetup ? 'Oui' : 'Non' }}
+            </span>
+          </td>
+          <td class="hstack">
+            <a class="btn" href="{{ path('admin_users_edit', {id:u.id}) }}">Éditer</a>
+            <form method="post" action="{{ path('admin_users_delete', {id:u.id}) }}">
+              <input type="hidden" name="_token" value="{{ csrf_token('del_user_' ~ u.id) }}">
+              <button class="btn btn-danger" data-confirm="Supprimer cet utilisateur ?">Supprimer</button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5" class="muted">Aucun utilisateur.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

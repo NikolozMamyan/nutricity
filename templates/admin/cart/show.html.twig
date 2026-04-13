@@ -1,0 +1,44 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Panier #{{ cart.id }}{% endblock %}
+
+{% block body %}
+  <div class="hstack" style="justify-content:space-between; margin-bottom:12px;">
+    <div>
+      <h1>Panier #{{ cart.id }}</h1>
+      <div class="muted">Status: {{ cart.status }} • Maj: {{ cart.updatedAt|date('d/m/Y H:i') }}</div>
+    </div>
+    <a class="btn" href="{{ path('admin_carts_index') }}">Retour</a>
+  </div>
+
+  <div class="form-row">
+    <div class="card">
+      <div style="font-weight:800; margin-bottom:8px;">Contact</div>
+      <div>Email: {{ cart.email ?: '—' }}</div>
+      <div>Téléphone: {{ cart.phone ?: '—' }}</div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:800; margin-bottom:8px;">Total</div>
+      <div style="font-size:22px; font-weight:900;">{{ cart.total|number_format(2,'.',' ') }} €</div>
+    </div>
+
+    <div class="card full">
+      <div style="font-weight:800; margin-bottom:8px;">Items</div>
+      <table class="table">
+        <thead><tr><th>Produit</th><th>Qté</th><th>Prix</th><th>Sous-total</th></tr></thead>
+        <tbody>
+        {% for it in cart.items %}
+          <tr>
+            <td>{{ it.productName }}</td>
+            <td>{{ it.quantity }}</td>
+            <td>{{ it.unitPrice }} €</td>
+            <td>{{ it.subtotal|number_format(2,'.',' ') }} €</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="4" class="muted">Aucun item.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

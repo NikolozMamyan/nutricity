@@ -1,0 +1,29 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Statut commande{% endblock %}
+
+{% block body %}
+  <h1>Changer statut — {{ order.orderNumber }}</h1>
+  <div class="muted" style="margin-bottom:12px;">
+    Statut actuel : <span class="badge">{{ order.statusLabel }}</span>
+  </div>
+
+  <div class="card">
+    {% if allowed is empty %}
+      <div class="muted">Aucune transition possible depuis ce statut.</div>
+    {% else %}
+      {{ form_start(form) }}
+        {# on stocke le statut actuel pour contrôler la transition côté serveur #}
+        <input type="hidden" name="order_status[__old]" value="{{ order.status }}">
+
+        <div style="max-width:420px;">
+          {{ form_row(form.status) }}
+        </div>
+
+        <div class="hstack" style="margin-top:12px;">
+          <button class="btn btn-primary">Enregistrer</button>
+          <a class="btn" href="{{ path('admin_orders_show', {id: order.id}) }}">Annuler</a>
+        </div>
+      {{ form_end(form) }}
+    {% endif %}
+  </div>
+{% endblock %}

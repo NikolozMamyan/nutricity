@@ -1,0 +1,45 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Produits{% endblock %}
+{% block body %}
+  <div class="hstack" style="justify-content:space-between; margin-bottom:12px;">
+    <div>
+      <h1>Produits</h1>
+      <div class="muted">Gestion catalogue + stock + activation.</div>
+    </div>
+    <a class="btn btn-primary" href="{{ path('admin_products_new') }}">Ajouter</a>
+  </div>
+
+  <div class="card" style="margin-bottom:12px;">
+    <form method="get" class="hstack">
+      <input name="q" value="{{ q }}" placeholder="Rechercher (nom/slug)..." style="max-width:360px;">
+      <button class="btn">Rechercher</button>
+      <a class="btn" href="{{ path('admin_products_index') }}">Reset</a>
+    </form>
+  </div>
+
+  <div class="card">
+    <table class="table">
+      <thead><tr><th>Nom</th><th>Catégorie</th><th>Prix</th><th>Stock</th><th>Actif</th><th></th></tr></thead>
+      <tbody>
+      {% for p in products %}
+        <tr>
+          <td><div style="font-weight:800;">{{ p.name }}</div><div class="muted">{{ p.slug }}</div></td>
+          <td>{{ p.category ? p.category.name : '—' }}</td>
+          <td>{{ p.price }} €</td>
+          <td><span class="badge {{ p.stock == 0 ? 'warn' : 'ok' }}">{{ p.stock }}</span></td>
+          <td><span class="badge {{ p.active ? 'ok' : 'bad' }}">{{ p.active ? 'Oui' : 'Non' }}</span></td>
+          <td class="hstack">
+            <a class="btn" href="{{ path('admin_products_edit', {id:p.id}) }}">Éditer</a>
+            <form method="post" action="{{ path('admin_products_delete', {id:p.id}) }}">
+              <input type="hidden" name="_token" value="{{ csrf_token('del_product_' ~ p.id) }}">
+              <button class="btn btn-danger" data-confirm="Supprimer ce produit ?">Supprimer</button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6" class="muted">Aucun produit.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

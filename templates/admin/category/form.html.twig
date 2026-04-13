@@ -1,0 +1,26 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block body %}
+  <div class="hstack" style="justify-content:space-between; margin-bottom:12px;">
+    <h1>{{ title }}</h1>
+    <a class="btn" href="{{ path('admin_categories_index') }}">Retour</a>
+  </div>
+
+  <div class="card">
+    {{ form_start(form) }}
+      <div class="form-row">
+        <div>{{ form_row(form.name) }}</div>
+        <div>{{ form_row(form.slug) }}</div>
+        <div class="full">{{ form_row(form.description) }}</div>
+        <div class="full">{{ form_row(form.metaTitle) }}</div>
+        <div class="full">{{ form_row(form.metaDescription) }}</div>
+      </div>
+
+      <div class="hstack" style="margin-top:12px;">
+        <button class="btn btn-primary">Enregistrer</button>
+        <a class="btn" href="{{ path('admin_categories_index') }}">Annuler</a>
+      </div>
+    {{ form_end(form) }}
+  </div>
+{% endblock %}
