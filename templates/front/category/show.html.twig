@@ -1,72 +1,127 @@
-{# templates/front/category/show.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}{{ category.metaTitle ?? (category.name ~ ' - NUTRI CITY') }}{% endblock %}
 {% block meta_desc %}{{ category.metaDescription ?? category.description }}{% endblock %}
 
+{% block page_styles %}
+  <link rel="stylesheet" href="{{ asset('styles/category-show.css') }}">
+{% endblock %}
+
 {% block body %}
-<div class="container py-4">
-  <nav aria-label="Fil d'Ariane">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{{ path('home') }}">Accueil</a></li>
-      <li class="breadcrumb-item"><a href="{{ path('catalogue') }}">Produits</a></li>
-      <li class="breadcrumb-item active" aria-current="page">{{ category.name }}</li>
-    </ol>
-  </nav>
+<section class="category-page">
+  <div class="category-shell">
+    <header class="category-hero">
+      <nav class="category-breadcrumb" aria-label="Fil d'Ariane">
+        <a href="{{ path('home') }}">Accueil</a>
+        <span><i class="fas fa-chevron-right"></i></span>
+        <a href="{{ path('catalogue') }}">Produits</a>
+        <span><i class="fas fa-chevron-right"></i></span>
+        <span>{{ category.name }}</span>
+      </nav>
 
-  <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
-    <div>
-      <h1 class="h4 fw-bold mb-1">{{ category.name }}</h1>
-      {% if category.description %}
-        <p class="text-muted mb-0">{{ category.description }}</p>
-      {% endif %}
-    </div>
-    <a class="btn btn-outline-secondary" href="{{ path('catalogue', {cat: category.slug}) }}">
-      <i class="fas fa-filter me-1" aria-hidden="true"></i> Filtrer
-    </a>
-  </div>
-
-  <div class="row g-4">
-    {% for product in products %}
-      <div class="col-6 col-md-4 col-xl-3">
-        <div class="card product-card h-100">
-          <a href="{{ path('product_show', {slug: product.slug}) }}" class="text-decoration-none">
-            <img src="{{ product.photo ? asset('uploads/products/' ~ product.photo) : asset('img/placeholder.png') }}"
-                 alt="{{ product.name }}" class="card-img-top" loading="lazy">
-          </a>
-          <div class="card-body">
-            <div class="d-flex align-items-start justify-content-between gap-2">
-              <h2 class="h6 mb-1">
-                <a class="text-decoration-none text-dark" href="{{ path('product_show', {slug: product.slug}) }}">
-                  {{ product.name }}
-                </a>
-              </h2>
-              {% if product.isNew %}
-                <span class="badge bg-warning text-dark">Nouveau</span>
-              {% endif %}
-            </div>
-
-            <div class="fw-bold text-nutri-green mb-2">{{ product.price|number_format(2, ',', ' ') }} EUR</div>
-
-            {% if product.stock > 0 %}
-              <form action="{{ path('cart_add', {id: product.id}) }}" method="post">
-                <input type="hidden" name="_token" value="{{ csrf_token('cart_add') }}">
-                <input type="hidden" name="quantity" value="1">
-                <button class="btn btn-nutri-green w-100" type="submit">
-                  <i class="fas fa-cart-plus me-1" aria-hidden="true"></i> Ajouter
-                </button>
-              </form>
-            {% else %}
-              <span class="badge bg-danger w-100 text-center py-2">Hors stock</span>
-            {% endif %}
-          </div>
+      <div class="category-head">
+        <div>
+          <h1 class="category-title">{{ category.name }}</h1>
+          {% if category.description %}
+            <p class="category-desc">{{ category.description }}</p>
+          {% endif %}
         </div>
+
+        <a class="category-cta" href="{{ path('catalogue', { category: category.id }) }}">
+          <i class="fas fa-sliders"></i>
+          Voir dans le catalogue
+        </a>
       </div>
-    {% else %}
-      <div class="col-12">
-        <div class="alert alert-warning" role="alert">Aucun produit dans cette categorie.</div>
+
+      <div class="category-meta" style="margin-top:1rem;">
+        <span class="category-pill"><i class="fas fa-box-open"></i> {{ total }} produit{{ total > 1 ? 's' : '' }}</span>
+        <span class="category-pill"><i class="fas fa-basket-shopping"></i> Ajout rapide disponible</span>
       </div>
-    {% endfor %}
+    </header>
+
+    <section class="category-content">
+      <div class="category-toolbar">
+        <div class="category-count">{{ total }} resultat{{ total > 1 ? 's' : '' }}</div>
+      </div>
+
+      {% if products is empty %}
+        <div class="category-empty">
+          <h2 style="color:var(--green-900); margin-bottom:0.4rem;">Aucun produit pour le moment</h2>
+          <p style="color:var(--text-muted); margin-bottom:1rem;">Cette categorie sera bientot enrichie.</p>
+          <a class="category-cta" href="{{ path('catalogue') }}" style="background:linear-gradient(135deg, var(--green-800), var(--green-500)); border:none;">
+            <i class="fas fa-arrow-left"></i>
+            Retour au catalogue
+          </a>
+        </div>
+      {% else %}
+        <div class="category-grid">
+          {% for product in products %}
+            <article class="category-card">
+              <a class="category-card-media" href="{{ path('product_show', { slug: product.slug }) }}">
+                {% if product.photo %}
+                  <img src="{{ asset('uploads/products/' ~ product.photo) }}" alt="{{ product.name }}" loading="lazy">
+                {% else %}
+                  <i class="fas fa-apple-alt" aria-hidden="true"></i>
+                {% endif %}
+
+                {% if product.isNew %}
+                  <span class="category-card-badge">Nouveau</span>
+                {% endif %}
+              </a>
+
+              <div class="category-card-body">
+                <div class="category-card-top">
+                  <a class="category-card-name" href="{{ path('product_show', { slug: product.slug }) }}">{{ product.name }}</a>
+                  <div class="category-card-price">{{ product.price|number_format(2, ',', ' ') }} EUR</div>
+                </div>
+
+                <div class="category-card-actions">
+                  <a class="category-btn-detail" href="{{ path('product_show', { slug: product.slug }) }}">
+                    <i class="fas fa-eye"></i>
+                    Detail
+                  </a>
+
+                  {% if product.stock > 0 %}
+                    <form action="{{ path('cart_add', { id: product.id }) }}" method="post" style="flex:1.2;">
+                      <input type="hidden" name="quantity" value="1">
+                      <button class="category-btn-add" type="submit" style="width:100%;">
+                        <i class="fas fa-cart-plus"></i>
+                        Ajouter
+                      </button>
+                    </form>
+                  {% else %}
+                    <span class="category-btn-detail" style="flex:1.2; background:rgba(239,68,68,0.08); color:#b91c1c; border-color:rgba(239,68,68,0.15);">
+                      <i class="fas fa-ban"></i>
+                      Rupture
+                    </span>
+                  {% endif %}
+                </div>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+
+        {% if totalPages > 1 %}
+          <nav class="category-pagination" aria-label="Pagination categorie">
+            <a href="{{ path('category_show', { slug: category.slug, page: page - 1 }) }}" class="category-page-btn {{ page <= 1 ? 'is-disabled' : '' }}">
+              <i class="fas fa-chevron-left"></i>
+            </a>
+
+            {% for p in 1..totalPages %}
+              {% if p == 1 or p == totalPages or (p >= page - 2 and p <= page + 2) %}
+                <a href="{{ path('category_show', { slug: category.slug, page: p }) }}" class="category-page-btn {{ p == page ? 'is-active' : '' }}">{{ p }}</a>
+              {% elseif p == page - 3 or p == page + 3 %}
+                <span class="category-page-btn is-disabled">...</span>
+              {% endif %}
+            {% endfor %}
+
+            <a href="{{ path('category_show', { slug: category.slug, page: page + 1 }) }}" class="category-page-btn {{ page >= totalPages ? 'is-disabled' : '' }}">
+              <i class="fas fa-chevron-right"></i>
+            </a>
+          </nav>
+        {% endif %}
+      {% endif %}
+    </section>
   </div>
-</div>
+</section>
 {% endblock %}

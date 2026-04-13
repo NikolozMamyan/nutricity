@@ -66,9 +66,17 @@ class CartService
 
     public function getCount(): int
     {
-        return array_reduce($this->getCart(), static function (int $count, array $item): int {
-            return $count + (int) ($item['quantity'] ?? 0);
-        }, 0);
+        $rawCart = $this->getSession()->get('cart', []);
+        $count = 0;
+
+        foreach ($rawCart as $id => $row) {
+            $quantity = (int) ($row['quantity'] ?? (is_numeric($row) ? $row : 0));
+            if ($quantity > 0) {
+                $count += $quantity;
+            }
+        }
+
+        return $count;
     }
 
     public function clear(): void

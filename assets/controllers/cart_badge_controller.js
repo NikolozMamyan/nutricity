@@ -16,16 +16,37 @@ export default class extends Controller {
 
   async fetchCount() {
     if (!this.urlValue) return;
+
+    if (typeof window.__cartCountCache === "number") {
+      this.update(window.__cartCountCache);
+      return;
+    }
+
+    if (window.__cartCountPromise) {
+      const count = await window.__cartCountPromise;
+      this.update(count);
+      return;
+    }
+
     try {
-      const res = await fetch(this.urlValue, {
+      window.__cartCountPromise = fetch(this.urlValue, {
         headers: { "X-Requested-With": "XMLHttpRequest" },
-      });
-      const data = await res.json();
-      this.update(data.count || 0);
+      })
+        .then((res) => res.json())
+        .then((data) => Number(data.count || 0))
+        .catch(() => 0);
+
+      const count = await window.__cartCountPromise;
+      window.__cartCountCache = count;
+      this.update(count);
     } catch (_) {}
+    finally {
+      window.__cartCountPromise = null;
+    }
   }
 
   update(count) {
+    window.__cartCountCache = Number(count || 0);
     if (this.hasBadgeTarget) this.apply(this.badgeTarget, count);
     if (this.hasSidebarCountTarget) this.apply(this.sidebarCountTarget, count);
   }
