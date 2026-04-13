@@ -53,7 +53,10 @@
             "symfony/runtime": true
         },
         "bump-after-update": true,
-        "sort-packages": true
+        "sort-packages": true,
+        "platform": {
+            "ext-redis": "5.3.7"
+        }
     },
     "autoload": {
         "psr-4": {
@@ -94,7 +97,7 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "7.4.*"
+            "require": "7.3.*"
         }
     },
     "require-dev": {
