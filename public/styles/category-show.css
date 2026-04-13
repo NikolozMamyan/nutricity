@@ -404,6 +404,7 @@
   border: none;
   background: linear-gradient(135deg, var(--green-800), var(--green-500));
   color: #fff;
+  cursor: pointer;
   box-shadow: 0 14px 24px rgba(45, 106, 79, 0.18);
 }
 
